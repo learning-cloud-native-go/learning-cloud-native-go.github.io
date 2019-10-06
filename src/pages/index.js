@@ -19,7 +19,7 @@ const repos = [
     url: 'https://github.com/learning-cloud-native-go/website',
     imageUrl: 'img/website.svg',
     description: (
-      <>This is the repository for the website.</>
+      <>This is the repository for the documentation</>
     ),
     gitHubStarUrl: 'https://ghbtns.com/github-btn.html?user=learning-cloud-native-go&repo=website&type=star&count=true',
     gitHubForkUrl: 'https://ghbtns.com/github-btn.html?user=learning-cloud-native-go&repo=website&type=fork&count=true',
