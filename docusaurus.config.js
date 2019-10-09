@@ -33,6 +33,13 @@ module.exports = {
       style: '',
       copyright: `Copyright © ${new Date().getFullYear()} Dumindu Madunuwan.`,
     },
+    googleAnalytics: {
+      trackingID: 'UA-149592723-1',
+    },
+    algolia: {
+      apiKey: '9f66d24134e08e8c577683743bfb1918',
+      indexName: 'learning-cloud-native-go',
+    },
   },
   presets: [
     [
