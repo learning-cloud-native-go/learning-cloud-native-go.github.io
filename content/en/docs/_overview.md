@@ -1,6 +1,8 @@
 ---
-id: index
 title: Overview
+url: "docs"
+aliases:
+- "/docs/overview"
 ---
 
 Cloud Native Application Development is a one way of speeding up building web applications, using micro-services, containers and orchestration tools. First, let’s see what is a cloud and what cloud native means.

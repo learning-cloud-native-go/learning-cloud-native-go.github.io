@@ -1,0 +1,11 @@
+title = 'Learning Cloud Native Go'
+baseURL = 'https://learning-cloud-native-go.github.io'
+
+defaultContentLanguage = 'en'
+languageCode = 'en-us'
+
+googleAnalytics = 'G-H3GD0XFJ42'
+
+enableGitInfo = false
+
+theme = 'docura'

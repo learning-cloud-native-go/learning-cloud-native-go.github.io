@@ -1,0 +1,19 @@
+- title: Documentation
+  pages:
+    - title: Overview
+
+- title: Building RESTful APIs
+  pages:
+    - title: Building a Dockerized RESTful API application
+    - title: Creating a new Go project
+    - title: Adding initial HTTP server
+    - title: Adding initial docker files
+    - title: Adding initial configurations
+    - title: Adding Chi router
+    - title: Adding Zerolog logger
+    - title: Adding DB docker file
+    - title: Adding initial database migrations
+    - title: Adding GORM
+    - title: Adding initial books API routes
+    - title: Implementing RESTful handlers
+    - title: Adding Validator v9
