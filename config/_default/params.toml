@@ -21,3 +21,15 @@ container = '#site-header-search'
 appId = ''
 indexName = 'learning-cloud-native-go'
 apiKey = '9f66d24134e08e8c577683743bfb1918'
+
+[[githubRepos]]
+name = 'Website'
+repo = 'learning-cloud-native-go/site'
+icon = "<i class='icon icon-repo-website'></i>"
+description = 'The repository of the documentation.'
+
+[[githubRepos]]
+name = 'Code'
+repo = 'learning-cloud-native-go/myapp'
+icon = "<i class='icon icon-repo-code'></i>"
+description = 'The repository of the API app.'
