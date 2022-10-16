@@ -18,9 +18,9 @@ docuraURL = 'https://docura.github.io/'
 [algolia]
 [algolia.en]
 container = '#site-header-search'
-appId = ''
+appId = '5ND7WIN6JB'
 indexName = 'learning-cloud-native-go'
-apiKey = '9f66d24134e08e8c577683743bfb1918'
+apiKey = '66b4409582624e8c99c5f15a4c13cd87'
 
 [[githubRepos]]
 name = 'Website'
