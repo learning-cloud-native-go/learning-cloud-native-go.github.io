@@ -9,6 +9,5 @@ This website is built using [Hugo](https://gohugo.io/) and [Docura](https://docu
     $ git clone --depth 1 https://github.com/learning-cloud-native-go/site.git
     $ cd site
     $ git submodule update --init --recursive
-    $ git submodule update --remote
     $ hugo server
     ```
