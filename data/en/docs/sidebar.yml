@@ -2,9 +2,9 @@
   pages:
     - title: Overview
 
-- title: Building RESTful APIs
+- title: Building an API application
   pages:
-    - title: Building a Dockerized RESTful API application
+    - title: Building a Dockerized RESTful API application in Go
     - title: Creating a new Go project
     - title: Adding initial HTTP server
     - title: Adding initial docker files
