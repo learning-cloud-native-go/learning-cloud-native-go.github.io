@@ -2,7 +2,12 @@
   pages:
     - title: Overview
 
-- title: Building an API application
+- title: Building an API application (Draft)
+  pages:
+    - title: Building a Dockerized RESTful API application in Go
+    - title: Hello World server
+
+- title: Building an API application (V1)
   pages:
     - title: Building a Dockerized RESTful API application
     - title: Creating a new Go project
@@ -17,8 +22,3 @@
     - title: Adding initial books API routes
     - title: Implementing RESTful handlers
     - title: Adding Validator v9
-
-- title: Building an API application (New/ Draft)
-  pages:
-    - title: Building a Dockerized RESTful API application in Go
-    - title: Hello World server
