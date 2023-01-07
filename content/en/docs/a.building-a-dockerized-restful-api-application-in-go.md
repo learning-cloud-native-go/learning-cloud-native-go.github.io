@@ -5,7 +5,7 @@ slug: building-a-dockerized-restful-api-application-in-go
 
 ## 👨‍🏫 In this section...
 
-In this section, we build a Dockerized RESTful API application in Go with the following steps,
+In this section, we build a Dockerized RESTful API application in Go for a simple bookshelf with the following steps:
 
 - We'll start from the `net/http` package of the Go standard library, create a basic server app, and Dockerize it.
 - Then, we'll add a database, create DB migration SQL files, and create the `migrate` app to run these migration files.
