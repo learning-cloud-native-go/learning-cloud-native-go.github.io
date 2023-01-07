@@ -6,6 +6,7 @@
   pages:
     - title: Building a Dockerized RESTful API application in Go
     - title: Hello World server
+    - title: Database and migrations
 
 - title: Building an API application (V1)
   pages:
