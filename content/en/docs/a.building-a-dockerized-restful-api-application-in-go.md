@@ -31,7 +31,6 @@ The completed API application supports the following API endpoints.
 | Update Book | PUT         | /api/v1/books/{id} |
 | Delete Book | DELETE      | /api/v1/books/{id} |
 
-
 The sourcecode of the completed project can be found in [learning-cloud-native-go/myapp](http://github.com/learning-cloud-native-go/myapp) GitHub repository.
 
 OK, Let's get it started!
