@@ -23,7 +23,7 @@ The completed API application supports the following API endpoints.
 
 | Name        | HTTP Method | Route              |
 |-------------|-------------|--------------------|
-| Health      | GET         | /healthz           |
+| Health      | GET         | /livez             |
 |             |             |                    |
 | List Books  | GET         | /api/v1/books      |
 | Create Book | POST        | /api/v1/books      |
