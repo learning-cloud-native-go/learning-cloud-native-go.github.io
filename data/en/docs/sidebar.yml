@@ -8,6 +8,7 @@
     - title: Hello World server
     - title: Database and migrations
     - title: Configurations
+    - title: Router, routes and OpenAPI specification
 
 - title: Building an API application (V1)
   pages:
