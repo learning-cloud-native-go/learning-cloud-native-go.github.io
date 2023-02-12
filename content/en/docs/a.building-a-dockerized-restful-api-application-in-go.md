@@ -21,15 +21,15 @@ In this section, we build a Dockerized RESTful API application in Go for a simpl
 
 The completed API application supports the following API endpoints.
 
-| Name        | HTTP Method | Route              |
-|-------------|-------------|--------------------|
-| Health      | GET         | /livez             |
-|             |             |                    |
-| List Books  | GET         | /api/v1/books      |
-| Create Book | POST        | /api/v1/books      |
-| Read Book   | GET         | /api/v1/books/{id} |
-| Update Book | PUT         | /api/v1/books/{id} |
-| Delete Book | DELETE      | /api/v1/books/{id} |
+| Name        | HTTP Method | Route          |
+|-------------|-------------|----------------|
+| Health      | GET         | /livez         |
+|             |             |                |
+| List Books  | GET         | /v1/books      |
+| Create Book | POST        | /v1/books      |
+| Read Book   | GET         | /v1/books/{id} |
+| Update Book | PUT         | /v1/books/{id} |
+| Delete Book | DELETE      | /v1/books/{id} |
 
 The sourcecode of the completed project can be found in [learning-cloud-native-go/myapp](http://github.com/learning-cloud-native-go/myapp) GitHub repository.
 
