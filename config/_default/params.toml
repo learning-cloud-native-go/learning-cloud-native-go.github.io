@@ -17,7 +17,7 @@ buyMeACoffeeURL = 'https://www.buymeacoffee.com/dumindu'
 container = '#site-header-search'
 appId = '5ND7WIN6JB'
 indexName = 'learning-cloud-native-go'
-apiKey = '66b4409582624e8c99c5f15a4c13cd87'
+apiKey = 'feb6d5b4df86735b9bdddbaabb3f8618'
 
 [[githubRepos]]
 name = 'Website'
