@@ -1,5 +1,5 @@
 title = 'Learning Cloud Native Go'
-baseURL = 'https://learning-cloud-native-go.github.io'
+baseURL = 'https://learning-cloud-native-go.github.io/'
 
 defaultContentLanguage = 'en'
 languageCode = 'en-us'
