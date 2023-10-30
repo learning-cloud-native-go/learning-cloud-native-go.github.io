@@ -3,18 +3,17 @@ title: Building a Dockerized RESTful API application in Go
 slug: building-a-dockerized-restful-api-application-in-go
 ---
 
-## 👨‍🏫 In this section...
+## 👨‍🏫 In this series...
 
-In this section, we build a Dockerized RESTful API application in Go for a simple bookshelf with the following steps:
+In this series, we build a Dockerized Go RESTful API for a bookshelf with these steps:
 
-- We'll start with the `net/http` package from the Go standard library, create a basic server application, and Dockerize it.
-- Then, we'll add a database, create DB migration SQL files, and create the `migrate` app to run these migration files.
-- Next, we'll add dynamic application configurations via environment variables.
-- After that, we'll integrate Chi and add API routes and middleware.
-- Then, we'll integrate Zerolog and implement request logs.
-- Next, we'll integrate Gorm and add repository functions.
-- Then, we'll complete our RESTful APIs.
-- Later on, we'll integrate Validator v10 and add form validations.
+- Create a basic server using Go's `net/http` package and Dockerize it.
+- Add the database, SQL migration files, and create the `migrate` app to run these migration files.
+- Implement dynamic application configurations via environment variables.
+- Integrate Chi, add initial API routes, and generate OpenAPI specifications.
+- Integrate GORM, implement repository functions with tests, and invoke repository from the handlers.
+- Enhance error handling and integrate Validator v10 for form validations.
+- Implement error logs and request logs via Zerolog.
 
 
 ## 📦 The codebase

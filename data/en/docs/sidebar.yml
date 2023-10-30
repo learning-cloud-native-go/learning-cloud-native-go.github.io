@@ -2,7 +2,8 @@
   pages:
     - title: Overview
 
-- title: Building an API application (Draft)
+- title: Building a Dockerized RESTful API (New)
+  replaceFirstPageTitle: Overview
   pages:
     - title: Building a Dockerized RESTful API application in Go
     - title: Hello World server
