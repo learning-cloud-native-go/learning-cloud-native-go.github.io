@@ -1,9 +1,5 @@
 description = 'Cloud Native Go Tutorials for Everyone!'
 
-[author]
-name= 'Dumindu Madunuwan'
-URL = 'https://github.com/dumindu'
-
 currentYear = 2023
 projectStartYear = 2019
 
@@ -16,6 +12,10 @@ githubRepo = 'learning-cloud-native-go/site'
 
 buyMeACoffee = 'dumindu'
 githubSponsor = 'dumindu'
+
+[author]
+name= 'Dumindu Madunuwan'
+URL = 'https://github.com/dumindu'
 
 [algolia]
 [algolia.en]

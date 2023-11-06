@@ -4,10 +4,12 @@ baseURL = 'https://learning-cloud-native-go.github.io/'
 defaultContentLanguage = 'en'
 languageCode = 'en-us'
 
-googleAnalytics = 'G-H3GD0XFJ42'
-
 enableGitInfo = true
 
 theme = 'docura'
 
 markup.highlight.noClasses = false
+
+[services]
+[services.googleAnalytics]
+ID = 'G-H3GD0XFJ42'
