@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Cloud Native Go Tutorials for Everyone!">
+  <meta name="author" content="Dumindu Madunuwan">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101010" media="(prefers-color-scheme: dark)">
+  
+
+  <title>Building a Dockerized RESTful API application in Go · Learning Cloud Native Go</title>
+  <link rel="canonical" href="https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application-in-go/">
+  <link rel="stylesheet" href="/assets/css/docs.min.min.9deba2d55bb7534667e8b6e4ac842dd1330bdc793b12b633d5413d263a72db4a.css" integrity="">
+
+  <link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/favicon/favicon.ico">
+<link rel="icon" href="/favicon/favicon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/favicon/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" sizes="180x180">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-H3GD0XFJ42"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H3GD0XFJ42');
+</script>
+</head>
+
+<body>
+
+<div id="outer-wrapper">
+
+  <div id="aside-wrapper">
+    <aside>
+      <div>
+        <button class="btn"><i>❌</i>Close</button>
+      </div>
+      <a href="/" class="site-logo">Learning Cloud Native Go</a>
+
+      <nav role="navigation">
+        <details open>
+          <summary>Documentation</summary>
+          <ul><li>
+              
+                
+                <a class="" href="/docs/overview/">
+                  
+                  Overview
+                  
+                </a>
+              
+            </li>
+
+          </ul>
+        </details><details open>
+          <summary>Building a Dockerized RESTful API</summary>
+          <ul><li>
+              
+                
+                <a class="active" href="/docs/building-a-dockerized-restful-api-application-in-go/">
+                  
+                  Overview
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/hello-world-server/">
+                  
+                  Hello World server
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/database-and-migrations/">
+                  
+                  Database and migrations
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/configurations/">
+                  
+                  Configurations
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/routes-and-openapi-specification/">
+                  
+                  Routes and OpenAPI specification
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/repository/">
+                  
+                  Repository
+                  
+                </a>
+              
+            </li>
+
+          </ul>
+        </details>
+      </nav>
+    </aside>
+  </div>
+
+  <div id="content-wrapper">
+    <header>
+      <a href="/" class="site-logo">Learning Cloud Native Go</a>
+    </header>
+
+    <main>
+      <article>
+        <nav>
+          <button class="btn"><i>⬅️</i> On this section</button>
+          <button class="btn">On this page <i>➡️</i></button>
+        </nav>
+        <header>
+          <h1>Building a Dockerized RESTful API application in Go</h1>
+          <p></p>
+        </header>
+        <div id="article-body">
+          <blockquote class="info">
+<p><strong>👨‍🏫</strong> <strong>In this series&hellip;</strong></p>
+<p>In this series, we are going to build a Dockerized Go RESTful API for a bookshelf with these steps:</p>
+<ul>
+<li>Create a basic server using Go&rsquo;s <code>net/http</code> package and Dockerize it.</li>
+<li>Add the database, SQL migration files, and create the <code>migrate</code> app to run these migration files.</li>
+<li>Implement dynamic application configurations via environment variables.</li>
+<li>Integrate Chi, add initial API routes, and generate OpenAPI specifications.</li>
+<li>Integrate GORM, implement repository functions with tests, and invoke repository from the handlers.</li>
+<li>Enhance error handling and integrate Validator v10 for form validations.</li>
+<li>Implement error logs and request logs via Zerolog.</li>
+</ul>
+</blockquote>
+<h2 id="-the-codebase">📦 The codebase</h2>
+<p>The completed API application supports the following API endpoints.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>HTTP Method</th>
+<th>Route</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Health</td>
+<td>GET</td>
+<td>/livez</td>
+</tr>
+<tr>
+<td>List Books</td>
+<td>GET</td>
+<td>/v1/books</td>
+</tr>
+<tr>
+<td>Create Book</td>
+<td>POST</td>
+<td>/v1/books</td>
+</tr>
+<tr>
+<td>Read Book</td>
+<td>GET</td>
+<td>/v1/books/{id}</td>
+</tr>
+<tr>
+<td>Update Book</td>
+<td>PUT</td>
+<td>/v1/books/{id}</td>
+</tr>
+<tr>
+<td>Delete Book</td>
+<td>DELETE</td>
+<td>/v1/books/{id}</td>
+</tr>
+</tbody>
+</table>
+<p>The sourcecode of the completed project can be found in <a href="http://github.com/learning-cloud-native-go/myapp">learning-cloud-native-go/myapp</a> GitHub repository.</p>
+<p>OK, Let&rsquo;s get it started!</p>
+
+        </div>
+
+        <footer>
+          
+
+          
+          
+          
+          
+
+          
+          
+          
+          
+          
+          
+
+          
+          
+          
+
+          
+          
+          
+
+          
+          
+          
+
+          
+          
+          
+
+          
+          
+          
+
+          <time datetime="2023-10-30"><i>🕒</i> Updated: 2023-10-30</time>
+          
+          <a href="/docs/overview/"><i>﹤</i> Previous</a>
+          
+
+          
+          <a href="/docs/hello-world-server/">Next <i>﹥</i></a>
+          
+
+        </footer>
+      </article>
+
+      <aside>
+        <div>
+          <button class="btn"><i>❌</i>Close</button>
+        </div>
+        <strong>On this page</strong>
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#-the-codebase">📦 The codebase</a></li>
+  </ul>
+</nav>
+      </aside>
+    </main>
+
+    <footer>
+      <div><i>🧑‍💻</i>Built by and copyright<a href="https://github.com/dumindu" target="_blank">Dumindu Madunuwan</a><i>📅</i> 2019-2023<i>🚀</i> <a href="https://github.com/learning-cloud-native-go" target="_blank">GitHub</a></div>
+      <div>
+        <button class="btn"><i>☀️</i><i>⁄</i><i>🌑</i></button>
+      </div>
+    </footer>
+  </div>
+
+</div>
+
+<div id="body-model-outer"></div>
+<script type="text/javascript" src="/assets/js/docs.min.min.12ffdc25c0149ef34e761ee54587f2aae17affcb8375298ad2180851930cb142.js" integrity=""></script>
+</body>
+</html>

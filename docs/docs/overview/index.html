@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Cloud Native Go Tutorials for Everyone!">
+  <meta name="author" content="Dumindu Madunuwan">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101010" media="(prefers-color-scheme: dark)">
+  
+
+  <title>Overview · Learning Cloud Native Go</title>
+  <link rel="canonical" href="https://learning-cloud-native-go.github.io/docs/overview/">
+  <link rel="stylesheet" href="/assets/css/docs.min.min.9deba2d55bb7534667e8b6e4ac842dd1330bdc793b12b633d5413d263a72db4a.css" integrity="">
+
+  <link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/favicon/favicon.ico">
+<link rel="icon" href="/favicon/favicon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/favicon/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" sizes="180x180">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-H3GD0XFJ42"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H3GD0XFJ42');
+</script>
+</head>
+
+<body>
+
+<div id="outer-wrapper">
+
+  <div id="aside-wrapper">
+    <aside>
+      <div>
+        <button class="btn"><i>❌</i>Close</button>
+      </div>
+      <a href="/" class="site-logo">Learning Cloud Native Go</a>
+
+      <nav role="navigation">
+        <details open>
+          <summary>Documentation</summary>
+          <ul><li>
+              
+                
+                <a class="active" href="/docs/overview/">
+                  
+                  Overview
+                  
+                </a>
+              
+            </li>
+
+          </ul>
+        </details><details open>
+          <summary>Building a Dockerized RESTful API</summary>
+          <ul><li>
+              
+                
+                <a class="" href="/docs/building-a-dockerized-restful-api-application-in-go/">
+                  
+                  Overview
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/hello-world-server/">
+                  
+                  Hello World server
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/database-and-migrations/">
+                  
+                  Database and migrations
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/configurations/">
+                  
+                  Configurations
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/routes-and-openapi-specification/">
+                  
+                  Routes and OpenAPI specification
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/repository/">
+                  
+                  Repository
+                  
+                </a>
+              
+            </li>
+
+          </ul>
+        </details>
+      </nav>
+    </aside>
+  </div>
+
+  <div id="content-wrapper">
+    <header>
+      <a href="/" class="site-logo">Learning Cloud Native Go</a>
+    </header>
+
+    <main>
+      <article>
+        <nav>
+          <button class="btn"><i>⬅️</i> On this section</button>
+          <button class="btn">On this page <i>➡️</i></button>
+        </nav>
+        <header>
+          <h1>Overview</h1>
+          <p></p>
+        </header>
+        <div id="article-body">
+          <p>Cloud Native Application Development is a one way of speeding up building web applications, using micro-services, containers and orchestration tools. First, let’s see what is a cloud and what cloud native means.</p>
+<h2 id="what-is-cloud-native">What is Cloud Native?</h2>
+<p>There are many definitions for cloud and cloud native architecture. First let’s check the definitions given by <a href="https://www.redhat.com/">RedHat</a> via their <a href="https://www.redhat.com/en/topics/cloud">Understanding cloud computing</a> and <a href="https://www.redhat.com/en/topics/cloud-native-apps">Understanding cloud-native applications</a> articles.</p>
+<p><a href="https://www.redhat.com/en/topics/cloud">📖</a> Clouds are <strong>pools of virtual resources</strong> (such as raw processing power, storage, or cloud-based applications) orchestrated by management and automation software so they can be accessed by users on-demand through self-service portals supported by automatic scaling and dynamic resource allocation.</p>
+<p><a href="https://www.redhat.com/en/topics/cloud-native-apps">📖</a> Cloud native applications are a <strong>collection of small, independent and loosely coupled services</strong> which are specifically designed to provide <strong>a fast and consistent development and automated management experience</strong> across private, public, and hybrid clouds.</p>
+<p>I think, now you are quite clear about cloud and cloud native applications. The definition provided by <a href="https://www.cncf.io/">Cloud Native Computing Foundation</a>, explains that how Cloud native applications achieve a fast and consistent development.</p>
+<p><a href="https://www.cncf.io/">📖</a> Cloud native computing uses an open source software stack to deploy applications as <strong>microservices</strong>, packaging each part into its own <strong>container</strong>, and dynamically <strong>orchestrating</strong> those containers <strong>to optimize resource utilization</strong>. Cloud native technologies enable software developers to build great products faster.</p>
+<blockquote>
+<p>💯 Explaining the concepts behind cloud native architecture is beyond the purpose of this. So, for more details, I would like to highly recommend you to read the first chapter of <a href="https://www.amazon.com/Cloud-Native-DevOps-Kubernetes-Applications/dp/1492040762">Cloud Native DevOps with Kubernetes</a> which is written by <a href="https://twitter.com/bitfield">John Arundel</a> and <a href="https://twitter.com/JustinDomingus">Justin Domingus</a>. You can get this as a free e-book via <a href="https://www.nginx.com/resources/library/cloud-native-devops-with-kubernetes/">NGINX resources</a>.</p>
+</blockquote>
+<h2 id="the-first-step">The First Step</h2>
+<p>This is the very beginning of this project. So, as the first step, we are going to discuss about <strong>&ldquo;How to build a Dockerized RESTful API application using Go&rdquo;</strong>. In the future discussions, we will discuss about <a href="https://kubernetes.io/">Kubernetes</a> and how to deploy our application in a cloud environment.</p>
+
+        </div>
+
+        <footer>
+          
+
+          
+          
+          
+          
+
+          
+          
+          
+          
+          
+          
+
+          
+          
+          
+
+          
+          
+          
+
+          
+          
+          
+
+          <time datetime="2023-06-25"><i>🕒</i> Updated: 2023-06-25</time>
+          
+          <a class="hidden"><i>﹤</i> Previous</a>
+          
+
+          
+          <a href="/docs/building-a-dockerized-restful-api-application-in-go/">Next <i>﹥</i></a>
+          
+
+        </footer>
+      </article>
+
+      <aside>
+        <div>
+          <button class="btn"><i>❌</i>Close</button>
+        </div>
+        <strong>On this page</strong>
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#what-is-cloud-native">What is Cloud Native?</a></li>
+    <li><a href="#the-first-step">The First Step</a></li>
+  </ul>
+</nav>
+      </aside>
+    </main>
+
+    <footer>
+      <div><i>🧑‍💻</i>Built by and copyright<a href="https://github.com/dumindu" target="_blank">Dumindu Madunuwan</a><i>📅</i> 2019-2023<i>🚀</i> <a href="https://github.com/learning-cloud-native-go" target="_blank">GitHub</a></div>
+      <div>
+        <button class="btn"><i>☀️</i><i>⁄</i><i>🌑</i></button>
+      </div>
+    </footer>
+  </div>
+
+</div>
+
+<div id="body-model-outer"></div>
+<script type="text/javascript" src="/assets/js/docs.min.min.12ffdc25c0149ef34e761ee54587f2aae17affcb8375298ad2180851930cb142.js" integrity=""></script>
+</body>
+</html>

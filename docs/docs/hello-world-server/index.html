@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Cloud Native Go Tutorials for Everyone!">
+  <meta name="author" content="Dumindu Madunuwan">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101010" media="(prefers-color-scheme: dark)">
+  
+
+  <title>Hello World server · Learning Cloud Native Go</title>
+  <link rel="canonical" href="https://learning-cloud-native-go.github.io/docs/hello-world-server/">
+  <link rel="stylesheet" href="/assets/css/docs.min.min.9deba2d55bb7534667e8b6e4ac842dd1330bdc793b12b633d5413d263a72db4a.css" integrity="">
+
+  <link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/favicon/favicon.ico">
+<link rel="icon" href="/favicon/favicon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/favicon/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" sizes="180x180">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-H3GD0XFJ42"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-H3GD0XFJ42');
+</script>
+</head>
+
+<body>
+
+<div id="outer-wrapper">
+
+  <div id="aside-wrapper">
+    <aside>
+      <div>
+        <button class="btn"><i>❌</i>Close</button>
+      </div>
+      <a href="/" class="site-logo">Learning Cloud Native Go</a>
+
+      <nav role="navigation">
+        <details open>
+          <summary>Documentation</summary>
+          <ul><li>
+              
+                
+                <a class="" href="/docs/overview/">
+                  
+                  Overview
+                  
+                </a>
+              
+            </li>
+
+          </ul>
+        </details><details open>
+          <summary>Building a Dockerized RESTful API</summary>
+          <ul><li>
+              
+                
+                <a class="" href="/docs/building-a-dockerized-restful-api-application-in-go/">
+                  
+                  Overview
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="active" href="/docs/hello-world-server/">
+                  
+                  Hello World server
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/database-and-migrations/">
+                  
+                  Database and migrations
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/configurations/">
+                  
+                  Configurations
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/routes-and-openapi-specification/">
+                  
+                  Routes and OpenAPI specification
+                  
+                </a>
+              
+            </li><li>
+              
+                
+                <a class="" href="/docs/repository/">
+                  
+                  Repository
+                  
+                </a>
+              
+            </li>
+
+          </ul>
+        </details>
+      </nav>
+    </aside>
+  </div>
+
+  <div id="content-wrapper">
+    <header>
+      <a href="/" class="site-logo">Learning Cloud Native Go</a>
+    </header>
+
+    <main>
+      <article>
+        <nav>
+          <button class="btn"><i>⬅️</i> On this section</button>
+          <button class="btn">On this page <i>➡️</i></button>
+        </nav>
+        <header>
+          <h1>Hello World server</h1>
+          <p></p>
+        </header>
+        <div id="article-body">
+          <blockquote class="info">
+<p><strong>👨‍🏫</strong> <strong>Before we start&hellip;</strong></p>
+<ul>
+<li>Go comes with the <a href="https://pkg.go.dev/net/http"><code>net/http</code></a> package, which provides HTTP client and server implementations. So,</li>
+<li>We&rsquo;ll start with the examples of the standard library documentation.</li>
+<li>Then, we will Dockerize and rearrange the files with an idiomatic project structure.</li>
+<li>⭐ We use <code>myapp</code> as the project name/ project root folder name.</li>
+</ul>
+</blockquote>
+<h2 id="listenandserve"><code>ListenAndServe</code></h2>
+<blockquote>
+<p><a href="https://pkg.go.dev/net/http#ListenAndServe">📖 <code>ListenAndServe</code></a> listens on the TCP network address addr and then calls Serve with handler to handle requests on incoming connections. Accepted connections are configured to enable TCP keep-alives.</p>
+</blockquote>
+<p>Let’s save this code under <code>main.go</code>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;io&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;net/http&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">http</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/hello&#34;</span><span class="p">,</span> <span class="nx">hello</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:8080&#34;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">hello</span> <span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">io</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><ul>
+<li>Use <code>go run ./main.go</code> command, to run it locally.</li>
+<li>You should see <code>Hello, world!</code> text while visit <a href="http://localhost:8080/hello">localhost:8080/hello</a> in the browser.</li>
+</ul>
+<h2 id="newservemux"><code>NewServeMux</code></h2>
+<blockquote>
+<p><a href="https://pkg.go.dev/net/http#ServeMux">📖 <code>ServeMux</code></a> ServeMux is an HTTP request multiplexer. It matches the URL of each incoming request against a list of registered patterns and calls the handler for the pattern that most closely matches the URL.
+<a href="https://pkg.go.dev/net/http#NewServeMux"><code>NewServeMux</code></a> allocates and returns a new ServeMux.</p>
+<p>💡 Because, default <code>ServeMux</code> is very limited and not very performant.</p>
+</blockquote>
+<p>Let&rsquo;s update the <code>main.go</code> with the following code.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;io&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;net/http&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/hello&#34;</span><span class="p">,</span> <span class="nx">hello</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:8080&#34;</span><span class="p">,</span> <span class="nx">mux</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">hello</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">io</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><ul>
+<li>Same way, use the <code>go run ./main.go</code> command, to run it locally.</li>
+<li>You should see the same response, <code>Hello, world!</code> text while visit <a href="http://localhost:8080/hello">localhost:8080/hello</a> in the browser.</li>
+</ul>
+<h2 id="server"><code>Server</code></h2>
+<blockquote>
+<p><a href="https://pkg.go.dev/net/http#Server">📖 <code>Server</code></a> A Server defines parameters for running an HTTP server.</p>
+</blockquote>
+<p>Let&rsquo;s update the <code>main.go</code> and see how we can change default timeout configs of the <code>Server</code>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;io&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;net/http&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;time&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/hello&#34;</span><span class="p">,</span> <span class="nx">hello</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">s</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">Addr</span><span class="p">:</span>         <span class="s">&#34;:8080&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">Handler</span><span class="p">:</span>      <span class="nx">mux</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">ReadTimeout</span><span class="p">:</span>  <span class="mi">2</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">WriteTimeout</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">IdleTimeout</span><span class="p">:</span>  <span class="mi">5</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">s</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">hello</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">io</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><ul>
+<li>You should see the same response, <code>Hello, world!</code> in the browser.</li>
+<li>To verify the functionality, you can use <a href="https://pkg.go.dev/time#Sleep"><code>time.Sleep()</code></a> function and after 2 seconds the server will automatically break the connection.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">hello</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">io</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h2 id="logs-and-error-handling">Logs and error handling</h2>
+<p>Let&rsquo;s update the <code>main.go</code> to see how we can add some logs and handle the basic errors of the above code.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;io&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;log&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;net/http&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;time&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/hello&#34;</span><span class="p">,</span> <span class="nx">hello</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">s</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">Addr</span><span class="p">:</span>         <span class="s">&#34;:8080&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">Handler</span><span class="p">:</span>      <span class="nx">mux</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">ReadTimeout</span><span class="p">:</span>  <span class="mi">2</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">WriteTimeout</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">IdleTimeout</span><span class="p">:</span>  <span class="mi">5</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Starting server :8080&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">s</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">&amp;&amp;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ErrServerClosed</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="s">&#34;Server startup failed&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">hello</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">io</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h2 id="dockerfile"><code>Dockerfile</code></h2>
+<blockquote>
+<p><a href="https://docs.docker.com/get-started/#docker-concepts">📖 Docker</a> is <strong>a platform</strong> for developers and sysadmins <strong>to develop, deploy, and run applications</strong> with <strong>containers</strong>. <a href="https://www.docker.com/resources/what-container">A container</a> is <strong>a standard unit of software</strong> that packages up code and all its dependencies so the application runs quickly and reliably from one computing environment to another. 🔍 If you are a newcomer to Docker, I recommend you to read <a href="https://www.docker.com/resources/what-container"><strong>What is a Container?</strong></a> article and its <a href="https://docs.docker.com/get-started/part2/"><strong>Get Started guild</strong></a> on its official documentation and install the <a href="https://www.docker.com/">Docker</a>.</p>
+</blockquote>
+<p>Let’s add the <code>Dockerfile</code>. We use <a href="https://hub.docker.com/_/golang">official Go Docker alpine image</a> to test our server.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="line"><span class="cl"><span class="k">FROM</span><span class="s"> golang:alpine</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /myapp</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">COPY</span> . .<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> go build main.go<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">CMD</span> <span class="p">[</span><span class="s2">&#34;/myapp/main&#34;</span><span class="p">]</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">EXPOSE</span><span class="s"> 8080</span><span class="err">
+</span></span></span></code></pre></div><ul>
+<li>To build the Docker image: <code>docker build -t myapp .</code></li>
+<li>To run: <code>docker run -dp 8080:8080 myapp</code></li>
+<li>You should see the same response, <code>Hello, world!</code> text while visit <a href="http://localhost:8080/hello">localhost:8080/hello</a> in the browser.</li>
+</ul>
+<blockquote>
+<p>💡 Docker generates a random name for our container, unless we set a custom name via the <code>--name</code> flag.
+We can use <code>docker ps</code> command to see more info. To stop the container <code>docker stop &lt;name&gt;</code> and to remove the image <code>docker rmi -f &lt;image-id&gt;</code>.</p>
+</blockquote>
+<h2 id="docker-composeyml"><code>docker-compose.yml</code></h2>
+<blockquote>
+<p><a href="https://docs.docker.com/compose/">📖 Docker Compose</a> is a <strong>tool for defining and running multi-container Docker applications</strong>. With a single command, we can create and start all the services according to the content in the <code>docker-compose.yml</code> file. 🔍 If you are new to Docker Compose, I recommend you to read its <a href="https://docs.docker.com/compose/gettingstarted/"><strong>Get Started guild</strong></a> on its official documentation.</p>
+</blockquote>
+<p>Let’s add the <code>docker-compose.yml</code>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="line"><span class="cl">version: <span class="s1">&#39;3&#39;</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span>services:<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span>  app:<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span>    build: .<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span>    ports:<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span>      - <span class="s2">&#34;8080:8080&#34;</span><span class="err">
+</span></span></span></code></pre></div><ul>
+<li>You can use <code>docker-compose build</code> and <code>docker-compose up</code> commands, to build and run the application.</li>
+<li>You should see the same response, <code>Hello, world!</code> text while visit <a href="http://localhost:8080/hello">localhost:8080/hello</a> in the browser.</li>
+<li>Use the <code>docker-compose down</code> command to stop the application.</li>
+</ul>
+<h2 id="an-idiomatic-structure">An idiomatic structure</h2>
+<p>Let&rsquo;s arrange the files to follow an idiomatic project structure.</p>
+<h3 id="1-gomod">1. <code>go.mod</code></h3>
+<blockquote>
+<p><a href="https://github.com/golang/go/wiki/Modules#modules">📖 A Go module</a> is a collection of related Go packages that are versioned together as a single unit. Most often, a version control repository contains exactly one module defined in the repository root. (<a href="https://github.com/golang/go/wiki/Modules#faqs--multi-module-repositories">Multiple modules are supported in a single repository</a>, but typically that would result in more work on an on-going basis than a single module per repository).</p>
+</blockquote>
+<p>You can create the <code>go.mod</code> by running <code>go mod init myapp</code>. It will generate the <code>go.mod</code> file in the project root with the module name and the Go version of your system.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">module</span> <span class="nx">myapp</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">go</span> <span class="mf">1.19</span>
+</span></span></code></pre></div><h3 id="2-cmd-and-bin-folders">2. <code>cmd</code> and <code>bin</code> folders</h3>
+<p>It&rsquo;s common to have multiple buildable binaries in a single project. Even in our project, we will add another executable to run the database migrations. It&rsquo;s a good practice to store all these buildable binaries as subfolders inside the <code>cmd</code> folder and store all binaries inside the <code>bin</code> folder</p>
+<ul>
+<li>
+<p>First, let&rsquo;s move the <code>main.go</code> file to <code>cmd/api/main.go</code></p>
+</li>
+<li>
+<p>Then, let&rsquo;s update the <code>Dockerfile</code> to update the paths.</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="line"><span class="cl"><span class="k">FROM</span><span class="s"> golang:alpine</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /myapp</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">COPY</span> . .<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> go build -o ./bin/api ./cmd/api<span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">CMD</span> <span class="p">[</span><span class="s2">&#34;/myapp/bin/api&#34;</span><span class="p">]</span><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">EXPOSE</span><span class="s"> 8080</span><span class="err">
+</span></span></span></code></pre></div><p>By changing <code>RUN go build main.go</code> to <code>RUN go build -o ./bin/api ./cmd/api</code>, we have updated few important things.</p>
+<ol>
+<li>While running <code>go build</code>, we target <code>/cmd/api</code> directory instead of <code>main.go</code> file.
+<ul>
+<li>So, we can divide the code into multiple files if needed.</li>
+</ul>
+</li>
+<li>We store the compiled binary inside the <code>bin</code> folder.
+<ul>
+<li>Adding the <code>-o</code> flag is necessary because the <code>bin</code> folder needs to create with the binary.</li>
+</ul>
+</li>
+</ol>
+<h2 id="-final-project-structure">📁 Final project structure</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">myapp
+</span></span><span class="line"><span class="cl">├── cmd
+</span></span><span class="line"><span class="cl">│  └── api
+</span></span><span class="line"><span class="cl">│     └── main.go
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">├── go.mod
+</span></span><span class="line"><span class="cl">│
+</span></span><span class="line"><span class="cl">├── docker-compose.yml
+</span></span><span class="line"><span class="cl">└── Dockerfile
+</span></span></code></pre></div><h2 id="-whats-next">👨‍🏫 What&rsquo;s next…</h2>
+<p>In the next article, we&rsquo;ll connect a database and add database migrations to our application.</p>
+
+        </div>
+
+        <footer>
+          
+
+          
+          
+          
+          
+
+          
+          
+          
+          
+          
+          
+
+          
+          
+          
+
+          
+          
+          
+
+          
+          
+          
+
+          
+          
+          
+
+          
+          
+          
+
+          
+          
+          
+
+          
+          
+          
+
+          <time datetime="2023-01-20"><i>🕒</i> Updated: 2023-01-20</time>
+          
+          <a href="/docs/building-a-dockerized-restful-api-application-in-go/"><i>﹤</i> Previous</a>
+          
+
+          
+          <a href="/docs/database-and-migrations/">Next <i>﹥</i></a>
+          
+
+        </footer>
+      </article>
+
+      <aside>
+        <div>
+          <button class="btn"><i>❌</i>Close</button>
+        </div>
+        <strong>On this page</strong>
+        <nav id="TableOfContents">
+  <ul>
+    <li><a href="#listenandserve"><code>ListenAndServe</code></a></li>
+    <li><a href="#newservemux"><code>NewServeMux</code></a></li>
+    <li><a href="#server"><code>Server</code></a></li>
+    <li><a href="#logs-and-error-handling">Logs and error handling</a></li>
+    <li><a href="#dockerfile"><code>Dockerfile</code></a></li>
+    <li><a href="#docker-composeyml"><code>docker-compose.yml</code></a></li>
+    <li><a href="#an-idiomatic-structure">An idiomatic structure</a>
+      <ul>
+        <li><a href="#1-gomod">1. <code>go.mod</code></a></li>
+        <li><a href="#2-cmd-and-bin-folders">2. <code>cmd</code> and <code>bin</code> folders</a></li>
+      </ul>
+    </li>
+    <li><a href="#-final-project-structure">📁 Final project structure</a></li>
+    <li><a href="#-whats-next">👨‍🏫 What&rsquo;s next…</a></li>
+  </ul>
+</nav>
+      </aside>
+    </main>
+
+    <footer>
+      <div><i>🧑‍💻</i>Built by and copyright<a href="https://github.com/dumindu" target="_blank">Dumindu Madunuwan</a><i>📅</i> 2019-2023<i>🚀</i> <a href="https://github.com/learning-cloud-native-go" target="_blank">GitHub</a></div>
+      <div>
+        <button class="btn"><i>☀️</i><i>⁄</i><i>🌑</i></button>
+      </div>
+    </footer>
+  </div>
+
+</div>
+
+<div id="body-model-outer"></div>
+<script type="text/javascript" src="/assets/js/docs.min.min.12ffdc25c0149ef34e761ee54587f2aae17affcb8375298ad2180851930cb142.js" integrity=""></script>
+</body>
+</html>
