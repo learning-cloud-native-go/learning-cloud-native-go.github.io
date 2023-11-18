@@ -33,6 +33,14 @@ Configurations can be stored in a variety of formats, such as .xml, .json, .env,
 We&amp;rsquo;ll run a Postgres database via docker-compose. There are a few popular database migration tools in the Go ecosystem, like golang-migrate/migrate, pressly/goose, GORM migrations, etc. We selected pressly/goose due to its simplicity, lesser resource usage, and customizability. But, instead of using its prebuilt binaries, we&amp;rsquo;ll build a custom binary with static drivers, settings, and more simplified commands. ⭐ We&amp;rsquo;ll store all SQL database migration files in the migrations folder in the project root.</description>
     </item>
     <item>
+      <title>Error handling</title>
+      <link>https://learning-cloud-native-go.github.io/docs/error-handling/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/error-handling/</guid>
+      <description>👨‍🏫 Before we start&amp;hellip;
+Go error values usually provide a more detailed context about what actually went wrong. However, returning the actual error messages to end user mostly cause confusion and make the system vulnerable to security threats. So, when an error occurs, we will send a custom but meaningful error message to the end-user. We choose the go-playground/validator for form validations, as it supports struct level validations, extensive validation rules, customizable error handling, etc.</description>
+    </item>
+    <item>
       <title>Hello World server</title>
       <link>https://learning-cloud-native-go.github.io/docs/hello-world-server/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
