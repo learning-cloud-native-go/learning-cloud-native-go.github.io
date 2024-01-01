@@ -2,6 +2,39 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://learning-cloud-native-go.github.io/docs/adding-chi-router/</loc>
+    <lastmod>2022-12-26T14:14:15+08:00</lastmod>
+  </url><url>
+    <loc>https://learning-cloud-native-go.github.io/docs/adding-db-docker-file/</loc>
+    <lastmod>2022-12-26T14:14:15+08:00</lastmod>
+  </url><url>
+    <loc>https://learning-cloud-native-go.github.io/docs/adding-gorm/</loc>
+    <lastmod>2022-12-26T14:14:15+08:00</lastmod>
+  </url><url>
+    <loc>https://learning-cloud-native-go.github.io/docs/adding-initial-books-api-routes/</loc>
+    <lastmod>2022-12-26T14:14:15+08:00</lastmod>
+  </url><url>
+    <loc>https://learning-cloud-native-go.github.io/docs/adding-initial-configurations/</loc>
+    <lastmod>2022-12-26T14:14:15+08:00</lastmod>
+  </url><url>
+    <loc>https://learning-cloud-native-go.github.io/docs/adding-initial-database-migrations/</loc>
+    <lastmod>2022-12-26T14:14:15+08:00</lastmod>
+  </url><url>
+    <loc>https://learning-cloud-native-go.github.io/docs/adding-initial-docker-files/</loc>
+    <lastmod>2022-12-26T14:14:15+08:00</lastmod>
+  </url><url>
+    <loc>https://learning-cloud-native-go.github.io/docs/adding-initial-http-server/</loc>
+    <lastmod>2022-12-26T14:14:15+08:00</lastmod>
+  </url><url>
+    <loc>https://learning-cloud-native-go.github.io/docs/adding-validator-v9/</loc>
+    <lastmod>2022-12-26T14:14:15+08:00</lastmod>
+  </url><url>
+    <loc>https://learning-cloud-native-go.github.io/docs/adding-zerolog-logger/</loc>
+    <lastmod>2022-12-26T14:14:15+08:00</lastmod>
+  </url><url>
+    <loc>https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application/</loc>
+    <lastmod>2022-12-26T15:40:22+08:00</lastmod>
+  </url><url>
     <loc>https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application-in-go/</loc>
     <lastmod>2023-10-30T16:45:14+08:00</lastmod>
   </url><url>
@@ -9,6 +42,9 @@
   </url><url>
     <loc>https://learning-cloud-native-go.github.io/docs/configurations/</loc>
     <lastmod>2023-09-14T15:48:58+08:00</lastmod>
+  </url><url>
+    <loc>https://learning-cloud-native-go.github.io/docs/creating-a-new-go-project/</loc>
+    <lastmod>2022-12-26T14:14:15+08:00</lastmod>
   </url><url>
     <loc>https://learning-cloud-native-go.github.io/docs/database-and-migrations/</loc>
     <lastmod>2023-01-20T16:20:07+08:00</lastmod>
@@ -21,6 +57,9 @@
   </url><url>
     <loc>https://learning-cloud-native-go.github.io/docs/hello-world-server/</loc>
     <lastmod>2023-01-20T00:29:45+08:00</lastmod>
+  </url><url>
+    <loc>https://learning-cloud-native-go.github.io/docs/implementing-restful-handlers/</loc>
+    <lastmod>2022-12-26T14:14:15+08:00</lastmod>
   </url><url>
     <loc>https://learning-cloud-native-go.github.io/</loc>
     <lastmod>2023-11-18T19:26:27+08:00</lastmod>

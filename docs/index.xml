@@ -8,12 +8,100 @@
     <language>en-US</language>
     <atom:link href="https://learning-cloud-native-go.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Adding Chi router</title>
+      <link>https://learning-cloud-native-go.github.io/docs/adding-chi-router/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/adding-chi-router/</guid>
+      <description>💭 The default HTTP request multiplexer in net/http is not very powerful. For example, if you visit localhost:8080/invalid-path it gives the same Hello World! response with 200 HTTP status instead giving 404 HTTP status. There are many powerful router libraries in Go like gorilla/mux, go-chi/chi, julienschmidt/httprouter, buaazp/fasthttprouter. In here, we are using go-chi/chi due to its lesser weight and extensibility.
+We need to run go get github.com/go-chi/chi to download and install the package.</description>
+    </item>
+    <item>
+      <title>Adding DB docker file</title>
+      <link>https://learning-cloud-native-go.github.io/docs/adding-db-docker-file/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/adding-db-docker-file/</guid>
+      <description>As I informed earlier, we use the docker folder in the project root to store all Docker related files. So, Let’s save this under docker/mariadb/Dockerfile. FROM yobasystems/alpine-mariadb:latest RUN apk update &amp;amp;&amp;amp; apk add --no-cache bash 💡In here, I am just using a mariadb alpine image with bash. If you don’t like to add an extra weight to your images by installing bash, just use builtin sh or ash shells and directly add image: &amp;quot;yobasystems/alpine-mariadb:latest&amp;quot; to docker-compose.</description>
+    </item>
+    <item>
+      <title>Adding GORM</title>
+      <link>https://learning-cloud-native-go.github.io/docs/adding-gorm/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/adding-gorm/</guid>
+      <description>💭 GORM is a full featured ORM for Golang. It supports database associations, preloading associated models, database transactions and many more. If you are not familiar with GORM, I highly recommend you to check its documentation before starting this section.
+Implementing a GORM adapter We need to run go get github.com/jinzhu/gorm to download and install the package. As you know, this updates go.mod and go.sum files as well.
+Even though GORM uses go-sql-driver/mysql to connect with MySQL/MariaDB databases, still it does not allow us to use existing *sql.</description>
+    </item>
+    <item>
+      <title>Adding initial books API routes</title>
+      <link>https://learning-cloud-native-go.github.io/docs/adding-initial-books-api-routes/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/adding-initial-books-api-routes/</guid>
+      <description>Implementing initial books API Handlers As mentioned earlier, in here we are building a RESTful CRUD API for a bookshelf. So, let&amp;rsquo;s create initial handler functions for the books API under app/app/book_handler.go. package app import ( &amp;#34;net/http&amp;#34; ) func (app *App) HandleListBooks(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) w.Write([]byte(&amp;#34;[]&amp;#34;)) } func (app *App) HandleCreateBook(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusCreated) } func (app *App) HandleReadBook(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) w.Write([]byte(&amp;#34;{}&amp;#34;)) } func (app *App) HandleUpdateBook(w http.</description>
+    </item>
+    <item>
+      <title>Adding initial configurations</title>
+      <link>https://learning-cloud-native-go.github.io/docs/adding-initial-configurations/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/adding-initial-configurations/</guid>
+      <description>If you remember the code of initial HTTP server, we have hard-coded the server port and timeout values with the code. Things like them should be configurable. So better extract them to a config package and use those config parameters in the code.
+💭 To store configurations, we can use many formats like .xml, .json, .env, .yaml, .toml files or systems like etcd, AWS Parameter Store, GCP Runtime Configurator. I chose .</description>
+    </item>
+    <item>
+      <title>Adding initial database migrations</title>
+      <link>https://learning-cloud-native-go.github.io/docs/adding-initial-database-migrations/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/adding-initial-database-migrations/</guid>
+      <description>💭 Database migrations are like version controls for the database. There are few popular options for database migration in the Go ecosystem like golang-migrate/migrate, pressly/goose, GORM migrations and etc. In here, we are using pressly/goose, due to its lesser resource usage and the simplicity of usage.
+Implementing a DB adapter In the previous section, inside the docker-compose.yml file, we adjusted the configurations of the MariaDB instance by setting environment variables to overwrite the default database name, username and passwords.</description>
+    </item>
+    <item>
+      <title>Adding initial docker files</title>
+      <link>https://learning-cloud-native-go.github.io/docs/adding-initial-docker-files/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/adding-initial-docker-files/</guid>
+      <description>📖 Docker is a platform for developers and sysadmins to develop, deploy, and run applications with containers.
+📖 A container is a standard unit of software that packages up code and all its dependencies so the application runs quickly and reliably from one computing environment to another.
+💡 If you are a newcomer to Docker, I recommend you to read What is a Container? article and its Get Started guild on its official documentation.</description>
+    </item>
+    <item>
+      <title>Adding initial HTTP server</title>
+      <link>https://learning-cloud-native-go.github.io/docs/adding-initial-http-server/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/adding-initial-http-server/</guid>
+      <description>💡 If you are a newcomer to Go, I recommend you to read the overview of the documentation of the net/http package, the descriptions of ServeMux type and HandleFunc &amp;amp; ListenAndServe functions, before continuing this.
+It&amp;rsquo;s a convention to store executable packages inside cmd directory. So, let&amp;rsquo;s save this code under cmd/app/main.go.
+package main import ( &amp;#34;fmt&amp;#34; &amp;#34;log&amp;#34; &amp;#34;net/http&amp;#34; &amp;#34;time&amp;#34; ) func main() { mux := http.NewServeMux() mux.HandleFunc(&amp;#34;/&amp;#34;, Greet) log.</description>
+    </item>
+    <item>
+      <title>Adding Validator v9</title>
+      <link>https://learning-cloud-native-go.github.io/docs/adding-validator-v9/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/adding-validator-v9/</guid>
+      <description>💭 Form validation is an important step while inserting and updating data. In the Go ecosystem we can see few validation packages like go-playground/validator.v9, go-ozzo/ozzo-validation. In here, we are using playground/validator.v9 due to its simplicity of usage.
+Adding initial validator We need to run go get gopkg.in/go-playground/validator.v9 to download and install the package. As you know, this updates go.mod and go.sum files as well.
+Let&amp;rsquo;s create util/validator/validator.go to get the *validator.</description>
+    </item>
+    <item>
+      <title>Adding Zerolog logger</title>
+      <link>https://learning-cloud-native-go.github.io/docs/adding-zerolog-logger/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/adding-zerolog-logger/</guid>
+      <description>⭐ While using microservices architectures, multiple services might be invoked to handle a single client request. The Syslog is a message logging protocol which can be used to send all log events in different systems to a centralized log storage like Graylog, Stackdriver, ELK Stack, to provide visibility into the behavior of microservices. There are many powerful logging libraries which support Syslog standards in Go like uber-go/zap, apex/log, sirupsen/logrus, rs/zerolog.</description>
+    </item>
+    <item>
+      <title>Building a Dockerized RESTful API application</title>
+      <link>https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application/</guid>
+      <description>In this section, we are going to build a RESTful API application to manage a simple bookshelf. And in here, we are discussing,
+Creating a new Go project. Creating a remote repository Creating a Go module Adding initial HTTP server. Adding initial Docker files. Adding a Dockerfile Adding a docker-compose.yml Support Docker multi-stage builds Adding initial configurations. Using environment variables for configurations Populating data from environment variables Adding Chi router. Adding Zerolog logger.</description>
+    </item>
+    <item>
       <title>Building a Dockerized RESTful API application in Go</title>
       <link>https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application-in-go/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application-in-go/</guid>
-      <description>👨‍🏫 In this series&amp;hellip;
-In this series, we are going to build a Dockerized Go RESTful API for a bookshelf with these steps:
+      <description>👨‍🏫 In this series&amp;hellip; In this series, we build a Dockerized Go RESTful API for a bookshelf with these steps:
 Create a basic server using Go&amp;rsquo;s net/http package and Dockerize it. Add the database, SQL migration files, and create the migrate app to run these migration files. Implement dynamic application configurations via environment variables. Integrate Chi, add initial API routes, and generate OpenAPI specifications. Integrate GORM, implement repository functions with tests, and invoke repository from the handlers.</description>
     </item>
     <item>
@@ -23,6 +111,16 @@ Create a basic server using Go&amp;rsquo;s net/http package and Dockerize it. Ad
       <guid>https://learning-cloud-native-go.github.io/docs/configurations/</guid>
       <description>👨‍🏫 Before we start&amp;hellip;
 Configurations can be stored in a variety of formats, such as .xml, .json, .env, .yaml, and .toml files, as well as systems like etcd, AWS Parameter Store, and GCP Runtime Configurator. In this project, we will save the configurations in an .env file and use docker-compose to load them into the development environment. Go standard library provides the os.Getenv() function to read each environment variable separately.</description>
+    </item>
+    <item>
+      <title>Creating a new Go project</title>
+      <link>https://learning-cloud-native-go.github.io/docs/creating-a-new-go-project/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/creating-a-new-go-project/</guid>
+      <description>Creating a remote repository It&amp;rsquo;s a good practice to save the code in a remote repository. So, I am using github.com/learning-cloud-native-go/myapp to store the code.
+💡 You can use GitHub, Bitbucket, GitLab or any preferable version control repository hosting service to store the code.
+In here, I prefer to use myapp as the project name. But you can choose a better name according to the purpose of your application.
+We are going to implement this application as a Go module.</description>
     </item>
     <item>
       <title>Database and migrations</title>
@@ -47,6 +145,15 @@ Go error values usually provide a more detailed context about what actually went
       <guid>https://learning-cloud-native-go.github.io/docs/hello-world-server/</guid>
       <description>👨‍🏫 Before we start&amp;hellip;
 Go comes with the net/http package, which provides HTTP client and server implementations. So, We&amp;rsquo;ll start with the examples of the standard library documentation. Then, we will Dockerize and rearrange the files with an idiomatic project structure. ⭐ We use myapp as the project name/ project root folder name. ListenAndServe 📖 ListenAndServe listens on the TCP network address addr and then calls Serve with handler to handle requests on incoming connections.</description>
+    </item>
+    <item>
+      <title>Implementing RESTful handlers</title>
+      <link>https://learning-cloud-native-go.github.io/docs/implementing-restful-handlers/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://learning-cloud-native-go.github.io/docs/implementing-restful-handlers/</guid>
+      <description>Let&amp;rsquo;s complete the functionality of each handler functions.
+💭 To make examples simpler and easier to understand for different levels of programmers, in here I am using models and repositories. This may not be the most idiomatic way of structuring Go applications but, this is one of hassle-free structure, even an absolute newcomer can understand.
+Completing list books functionality We use model/book.go to save models related to books. Book struct is used to map database records and BookDto struct is used to control how to show the model to outside.</description>
     </item>
     <item>
       <title>Overview</title>
