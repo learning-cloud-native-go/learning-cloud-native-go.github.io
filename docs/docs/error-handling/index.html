@@ -144,8 +144,8 @@
           <p></p>
         </header>
         <div id="article-body">
-          <blockquote>
-<p><strong>👨‍🏫 Before we start&hellip;</strong></p>
+          <blockquote class="info">
+<p><strong>👨‍🏫</strong> <strong>Before we start&hellip;</strong></p>
 <ul>
 <li>Go <code>error</code> values usually provide a more detailed context about what actually went wrong. However, returning the actual error messages to end user mostly cause confusion and make the system vulnerable to security threats. So, when an error occurs, we will send a custom but meaningful error message to the end-user.</li>
 <li>We choose the <a href="https://github.com/go-playground/validator/"><code>go-playground/validator</code></a> for form validations, as it supports struct level validations, extensive validation rules, customizable error handling, etc.</li>

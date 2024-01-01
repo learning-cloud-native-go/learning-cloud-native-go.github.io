@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#101010" media="(prefers-color-scheme: dark)">
   
 
-  <title>Database and migrations · Learning Cloud Native Go</title>
+  <title>Database and Migrations · Learning Cloud Native Go</title>
   <link rel="canonical" href="https://learning-cloud-native-go.github.io/docs/database-and-migrations/">
   <link rel="stylesheet" href="/assets/css/docs.min.59cb3187a30104d93101fbb253d04be28dba1a4d109e35e511c23913278024e9.css" integrity="">
 
@@ -140,12 +140,12 @@
           <button class="btn">On this page <i>➡️</i></button>
         </nav>
         <header>
-          <h1>Database and migrations</h1>
+          <h1>Database and Migrations</h1>
           <p></p>
         </header>
         <div id="article-body">
-          <blockquote>
-<p><strong>👨‍🏫 Before we start&hellip;</strong></p>
+          <blockquote class="info">
+<p><strong>👨‍🏫</strong> <strong>Before we start&hellip;</strong></p>
 <ul>
 <li>We&rsquo;ll run a Postgres database via <code>docker-compose</code>.</li>
 <li>There are a few popular database migration tools in the Go ecosystem, like <a href="https://github.com/golang-migrate/migrate"><code>golang-migrate/migrate</code></a>, <a href="https://github.com/pressly/goose"><code>pressly/goose</code></a>, <a href="http://gorm.io/docs/migration.html">GORM migrations</a>, etc. We selected <a href="https://github.com/pressly/goose"><code>pressly/goose</code></a> due to its simplicity, lesser resource usage, and customizability. But, instead of using its prebuilt binaries, we&rsquo;ll build a custom binary with static drivers, settings, and more simplified commands.</li>
