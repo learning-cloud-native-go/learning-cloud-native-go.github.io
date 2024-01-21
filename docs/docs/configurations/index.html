@@ -12,7 +12,7 @@
 
   <title>Configurations · Learning Cloud Native Go</title>
   <link rel="canonical" href="https://learning-cloud-native-go.github.io/docs/configurations/">
-  <link rel="stylesheet" href="/assets/css/docs.min.59cb3187a30104d93101fbb253d04be28dba1a4d109e35e511c23913278024e9.css" integrity="">
+  <link rel="stylesheet" href="/assets/css/docs.min.67fc7b3b41d707b198af1dd244ec62e1a1dd4665e40cb6f1d97e9257e597ff1d.css" integrity="">
 
   <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon/favicon.ico">
@@ -144,8 +144,7 @@
           <p></p>
         </header>
         <div id="article-body">
-          <blockquote class="info">
-<p><strong>👨‍🏫</strong> <strong>Before we start&hellip;</strong></p>
+          <blockquote class="info"><p><strong>👨‍🏫</strong> <strong>Before we start&hellip;</strong></p>
 <ul>
 <li>Configurations can be stored in a variety of formats, such as <code>.xml</code>, <code>.json</code>, <code>.env</code>, <code>.yaml</code>, and <code>.toml</code> files, as well as systems like <a href="https://etcd.io/"><code>etcd</code></a>, <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html">AWS Parameter Store</a>, and <a href="https://cloud.google.com/deployment-manager/runtime-configurator/">GCP Runtime Configurator</a>. In this project, we will save the configurations in an <code>.env</code> file and use <code>docker-compose</code> to load them into the development environment.</li>
 <li>Go standard library provides the <a href="https://golang.org/pkg/os/#Getenv"><code>os.Getenv()</code></a> function to read each environment variable separately. But there are Go libraries such as <a href="https://github.com/spf13/viper"><code>spf13/viper</code></a>, <a href="https://github.com/kelseyhightower/envconfig"><code>kelseyhightower/envconfig</code></a>, <a href="https://github.com/caarlos0/env"><code>caarlos0/env</code></a>, and <a href="https://github.com/joeshaw/envdecode"><code>joeshaw/envdecode</code></a> to read environment variables in bulk and populate them as a struct. We choose <a href="https://github.com/joeshaw/envdecode"><code>joeshaw/envdecode</code></a> for this project because it includes validations, zero-dependency, and ease of use.</li>
