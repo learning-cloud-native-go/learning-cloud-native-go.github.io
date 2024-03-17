@@ -53,9 +53,8 @@ Go comes with the net/http package, which provides HTTP client and server implem
       <link>https://learning-cloud-native-go.github.io/docs/overview/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>https://learning-cloud-native-go.github.io/docs/overview/</guid>
-      <description>Cloud Native Application Development is a one way of speeding up building web applications, using micro-services, containers and orchestration tools. First, let’s see what is a cloud and what cloud native means.
-What is Cloud Native? There are many definitions for cloud and cloud native architecture. First let’s check the definitions given by RedHat via their Understanding cloud computing and Understanding cloud-native applications articles.
-📖 Clouds are pools of virtual resources (such as raw processing power, storage, or cloud-based applications) orchestrated by management and automation software so they can be accessed by users on-demand through self-service portals supported by automatic scaling and dynamic resource allocation.</description>
+      <description>About me 🧑‍💻 I am an expat working in Singapore as a Go Backend and DevOps Engineer. Feel free to reach out if you find any mistakes or anything that needs to be changed, including spelling or grammar errors. Alternatively, you can create a pull request, open an issue, or share your awesome ideas in this gist. Good luck with learning cloud native Go!
+Cloud Native Applications ☁️ Clouds are virtual resource pools (storage, raw processing power, or cloud-based applications) that users can access on-demand.</description>
     </item>
     <item>
       <title>Repository</title>
