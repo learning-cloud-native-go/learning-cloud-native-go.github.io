@@ -1,493 +1,204 @@
-<!DOCTYPE html>
-<html lang="en-US">
-
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Cloud Native Go Tutorials for Everyone!">
-  <meta name="author" content="Dumindu Madunuwan">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#101010" media="(prefers-color-scheme: dark)">
-  
-
-  <title>Configurations · Learning Cloud Native Go</title>
-  <link rel="canonical" href="https://learning-cloud-native-go.github.io/docs/configurations/">
-  <link rel="stylesheet" href="/assets/css/docs.min.a6d52fd5461b892ef08a611a76391f8b999c6aca8f2a2317d6827c1143c0ca03.css" integrity="">
-
-  <link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/favicon/favicon.ico">
-<link rel="icon" href="/favicon/favicon-16x16.png" sizes="16x16" type="image/png">
-<link rel="icon" href="/favicon/favicon-32x32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" sizes="180x180">
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-H3GD0XFJ42"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-H3GD0XFJ42');
-</script>
-</head>
-
-<body>
-
-<div id="outer-wrapper">
-
-  <div id="aside-wrapper">
-    <aside>
-      <div>
-        <button class="btn"><i>❌</i>Close</button>
-      </div>
-      <a href="/" class="site-logo">Learning Cloud Native Go</a>
-
-      <nav role="navigation">
-        <details open>
-          <summary>Documentation</summary>
-          <ul><li>
-              
-                
-                <a class="" href="/docs/overview/">
-                  
-                  Overview
-                  
-                </a>
-              
-            </li>
-
-          </ul>
-        </details><details open>
-          <summary>Building a Dockerized RESTful API</summary>
-          <ul><li>
-              
-                
-                <a class="" href="/docs/building-a-dockerized-restful-api-application-in-go/">
-                  
-                  Overview
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/hello-world-server/">
-                  
-                  Hello World server
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/database-and-migrations/">
-                  
-                  Database and migrations
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="active" href="/docs/configurations/">
-                  
-                  Configurations
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/routes-and-openapi-specification/">
-                  
-                  Routes and OpenAPI specification
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/repository/">
-                  
-                  Repository
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/error-handling/">
-                  
-                  Error handling
-                  
-                </a>
-              
-            </li>
-
-          </ul>
-        </details>
-      </nav>
-    </aside>
-  </div>
-
-  <div id="content-wrapper">
-    <header>
-      <a href="/" class="site-logo">Learning Cloud Native Go</a>
-    </header>
-
-    <main>
-      <article>
-        <nav>
-          <button class="btn"><i>⬅️</i> On this section</button>
-          <button class="btn">On this page <i>➡️</i></button>
-        </nav>
-        <header>
-          <h1>Configurations</h1>
-          <p></p>
-        </header>
-        <div id="article-body">
-          <blockquote class="info"><p><strong>👨‍🏫</strong> <strong>Before we start&hellip;</strong></p>
-<ul>
-<li>Configurations can be stored in a variety of formats, such as <code>.xml</code>, <code>.json</code>, <code>.env</code>, <code>.yaml</code>, and <code>.toml</code> files, as well as systems like <a href="https://etcd.io/"><code>etcd</code></a>, <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html">AWS Parameter Store</a>, and <a href="https://cloud.google.com/deployment-manager/runtime-configurator/">GCP Runtime Configurator</a>. In this project, we will save the configurations in an <code>.env</code> file and use <code>docker-compose</code> to load them into the development environment.</li>
-<li>Go standard library provides the <a href="https://golang.org/pkg/os/#Getenv"><code>os.Getenv()</code></a> function to read each environment variable separately. But there are Go libraries such as <a href="https://github.com/spf13/viper"><code>spf13/viper</code></a>, <a href="https://github.com/kelseyhightower/envconfig"><code>kelseyhightower/envconfig</code></a>, <a href="https://github.com/caarlos0/env"><code>caarlos0/env</code></a>, and <a href="https://github.com/joeshaw/envdecode"><code>joeshaw/envdecode</code></a> to read environment variables in bulk and populate them as a struct. We choose <a href="https://github.com/joeshaw/envdecode"><code>joeshaw/envdecode</code></a> for this project because it includes validations, zero-dependency, and ease of use.</li>
-</ul>
-</blockquote>
-<h2 id="populate-environment-variables-with-docker">Populate environment variables with Docker</h2>
-<p>💡 We use <code>docker-compose</code> with the <a href="https://docs.docker.com/compose/compose-file/compose-file-v3/#env_file"><code>env_file</code></a> option to load the environment variables into the development environment. If you are using <code>docker run</code>, you can use the <a href="https://docs.docker.com/engine/reference/commandline/run/#options"><code>--env-file</code> option</a> with it.</p>
-<h3 id="1-add-env">1. Add <code>.env</code></h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-env" data-lang="env"><span class="line"><span class="cl"><span class="nv">SERVER_PORT</span><span class="o">=</span><span class="m">8080</span>
-</span></span><span class="line"><span class="cl"><span class="nv">SERVER_TIMEOUT_READ</span><span class="o">=</span>3s
-</span></span><span class="line"><span class="cl"><span class="nv">SERVER_TIMEOUT_WRITE</span><span class="o">=</span>5s
-</span></span><span class="line"><span class="cl"><span class="nv">SERVER_TIMEOUT_IDLE</span><span class="o">=</span>5s
-</span></span><span class="line"><span class="cl"><span class="nv">SERVER_DEBUG</span><span class="o">=</span><span class="nb">true</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nv">DB_HOST</span><span class="o">=</span>db
-</span></span><span class="line"><span class="cl"><span class="nv">DB_PORT</span><span class="o">=</span><span class="m">5432</span>
-</span></span><span class="line"><span class="cl"><span class="nv">DB_USER</span><span class="o">=</span>myapp_user
-</span></span><span class="line"><span class="cl"><span class="nv">DB_PASS</span><span class="o">=</span>myapp_pass
-</span></span><span class="line"><span class="cl"><span class="nv">DB_NAME</span><span class="o">=</span>myapp_db
-</span></span><span class="line"><span class="cl"><span class="nv">DB_DEBUG</span><span class="o">=</span><span class="nb">true</span>
-</span></span></code></pre></div><blockquote>
-<p>💡 <code>SERVER_DEBUG</code> and <code>DB_DEBUG</code> will be utilized with the application logs and the GORM logs in the future steps.</p>
-</blockquote>
-<h3 id="2-update-docker-composeyml">2. update <code>docker-compose.yml</code></h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yml" data-lang="yml"><span class="line"><span class="cl"><span class="w">  </span><span class="nt">app</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l">.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l">.env</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;8080:8080&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">db</span><span class="w">
-</span></span></span></code></pre></div><p>Run <code>docker-compose down</code> and <code>docker-compose up</code> to populate the environment variables into the development environment.</p>
-<h2 id="adding-configs-to-the-api">Adding configs to the API</h2>
-<h3 id="1-download-and-install-the-packages-and-dependencies">1. Download and install the packages and dependencies</h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="k">go</span> <span class="nx">get</span> <span class="nx">github</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">joeshaw</span><span class="o">/</span><span class="nx">envdecode</span> 
-</span></span></code></pre></div><h3 id="2-add-configconfiggo">2. Add <code>config/config.go</code></h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">config</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;log&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;time&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/joeshaw/envdecode&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Conf</span> <span class="kd">struct</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">Server</span> <span class="nx">ConfServer</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">DB</span>     <span class="nx">ConfDB</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">ConfServer</span> <span class="kd">struct</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">Port</span>         <span class="kt">int</span>           <span class="s">`env:&#34;SERVER_PORT,required&#34;`</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">TimeoutRead</span>  <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span> <span class="s">`env:&#34;SERVER_TIMEOUT_READ,required&#34;`</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">TimeoutWrite</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span> <span class="s">`env:&#34;SERVER_TIMEOUT_WRITE,required&#34;`</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">TimeoutIdle</span>  <span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span> <span class="s">`env:&#34;SERVER_TIMEOUT_IDLE,required&#34;`</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">Debug</span>        <span class="kt">bool</span>          <span class="s">`env:&#34;SERVER_DEBUG,required&#34;`</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">ConfDB</span> <span class="kd">struct</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">Host</span>     <span class="kt">string</span> <span class="s">`env:&#34;DB_HOST,required&#34;`</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">Port</span>     <span class="kt">int</span>    <span class="s">`env:&#34;DB_PORT,required&#34;`</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">Username</span> <span class="kt">string</span> <span class="s">`env:&#34;DB_USER,required&#34;`</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">Password</span> <span class="kt">string</span> <span class="s">`env:&#34;DB_PASS,required&#34;`</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">DBName</span>   <span class="kt">string</span> <span class="s">`env:&#34;DB_NAME,required&#34;`</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">Debug</span>    <span class="kt">bool</span>   <span class="s">`env:&#34;DB_DEBUG,required&#34;`</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">New</span><span class="p">()</span> <span class="o">*</span><span class="nx">Conf</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">c</span> <span class="nx">Conf</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">envdecode</span><span class="p">.</span><span class="nf">StrictDecode</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">c</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Failed to decode: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">c</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">NewDB</span><span class="p">()</span> <span class="o">*</span><span class="nx">ConfDB</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">c</span> <span class="nx">ConfDB</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">envdecode</span><span class="p">.</span><span class="nf">StrictDecode</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">c</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;Failed to decode: %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">c</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><h3 id="3-update-the-cmdapimaingo-to-read-the-config-from-config">3. Update the <code>cmd/api/main.go</code> to read the config from <code>config</code></h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;io&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;log&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;net/http&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;myapp/config&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">c</span> <span class="o">:=</span> <span class="nx">config</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">mux</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewServeMux</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">mux</span><span class="p">.</span><span class="nf">HandleFunc</span><span class="p">(</span><span class="s">&#34;/hello&#34;</span><span class="p">,</span> <span class="nx">hello</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">s</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">Addr</span><span class="p">:</span>         <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;:%d&#34;</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">Server</span><span class="p">.</span><span class="nx">Port</span><span class="p">),</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">Handler</span><span class="p">:</span>      <span class="nx">mux</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">ReadTimeout</span><span class="p">:</span>  <span class="nx">c</span><span class="p">.</span><span class="nx">Server</span><span class="p">.</span><span class="nx">TimeoutRead</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">WriteTimeout</span><span class="p">:</span> <span class="nx">c</span><span class="p">.</span><span class="nx">Server</span><span class="p">.</span><span class="nx">TimeoutWrite</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">IdleTimeout</span><span class="p">:</span>  <span class="nx">c</span><span class="p">.</span><span class="nx">Server</span><span class="p">.</span><span class="nx">TimeoutIdle</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Starting server &#34;</span> <span class="o">+</span> <span class="nx">s</span><span class="p">.</span><span class="nx">Addr</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">s</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="o">&amp;&amp;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ErrServerClosed</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="s">&#34;Server startup failed&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><h3 id="4-update-the-cmdmigratemaingo-to-read-the-config-from-config">4. Update the <code>cmd/migrate/main.go</code> to read the config from <code>config</code></h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;flag&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;log&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;os&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">_</span> <span class="s">&#34;github.com/jackc/pgx/v5/stdlib&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/pressly/goose/v3&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;myapp/config&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">const</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">dialect</span>     <span class="p">=</span> <span class="s">&#34;pgx&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">fmtDBString</span> <span class="p">=</span> <span class="s">&#34;host=%s user=%s password=%s dbname=%s port=%d sslmode=disable&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">flags</span> <span class="p">=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">NewFlagSet</span><span class="p">(</span><span class="s">&#34;migrate&#34;</span><span class="p">,</span> <span class="nx">flag</span><span class="p">.</span><span class="nx">ExitOnError</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">dir</span>   <span class="p">=</span> <span class="nx">flags</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;dir&#34;</span><span class="p">,</span> <span class="s">&#34;migrations&#34;</span><span class="p">,</span> <span class="s">&#34;directory with migration files&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">flags</span><span class="p">.</span><span class="nx">Usage</span> <span class="p">=</span> <span class="nx">usage</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">flags</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">args</span> <span class="o">:=</span> <span class="nx">flags</span><span class="p">.</span><span class="nf">Args</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#34;-h&#34;</span> <span class="o">||</span> <span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#34;--help&#34;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">flags</span><span class="p">.</span><span class="nf">Usage</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">command</span> <span class="o">:=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">c</span> <span class="o">:=</span> <span class="nx">config</span><span class="p">.</span><span class="nf">NewDB</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">dbString</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="nx">fmtDBString</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">Host</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">Username</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">Password</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">DBName</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">Port</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">goose</span><span class="p">.</span><span class="nf">OpenDBWithDriver</span><span class="p">(</span><span class="nx">dialect</span><span class="p">,</span> <span class="nx">dbString</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">goose</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">command</span><span class="p">,</span> <span class="nx">db</span><span class="p">,</span> <span class="o">*</span><span class="nx">dir</span><span class="p">,</span> <span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">...</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;migrate %v: %v&#34;</span><span class="p">,</span> <span class="nx">command</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p>Run <code>docker-compose down</code>, <code>docker-compose build</code> and <code>docker-compose up</code> to run the application with the recent changes.</p>
-<h3 id="5-run-go-mod-tidy">5. Run <code>go mod tidy</code></h3>
-<p>When we add a new package and use it, we have to run <code>go mod tidy</code> to reorganize the dependencies in the <code>go.mod</code> file.</p>
-<h2 id="running-migrations-on-the-application-startup">Running migrations on the application startup</h2>
-<blockquote>
-<p>💡 Because we hardcoded <code>localhost</code> for the database host in the previous article, we encountered the <code>migrate up: dial tcp 127.0.0.1:3306: connect: connection refused</code> error with the <code>./bin/migrate up</code> command. But, with the current configurations, we should be able to run <code>./bin/migrate up</code> inside the docker image with the correct host. So, let&rsquo;s automate running migrations on application startup.</p>
-</blockquote>
-<p>Usually, starting the database takes more time. So, we need to wait until the database is up before running database migrations. For this, we use <code>docker-compose</code> <code>db:</code><a href="https://docs.docker.com/compose/compose-file/#healthcheck"><code>healthcheck</code></a> and <code>app:</code><a href="https://docs.docker.com/compose/compose-file/#depends_on"><code>depends_on:db:condition</code></a> options.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yml" data-lang="yml"><span class="line"><span class="cl"><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;3.9&#39;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">app</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l">.</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">env_file</span><span class="p">:</span><span class="w"> </span><span class="l">.env</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;8080:8080&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">db</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l">service_healthy</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&#34;sh&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;-c&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;/myapp/bin/migrate up &amp;&amp; /myapp/bin/api&#34;</span><span class="w"> </span><span class="p">]</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">db</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">postgres:alpine</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">POSTGRES_DB=myapp_db</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">POSTGRES_USER=myapp_user</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">POSTGRES_PASSWORD=myapp_pass</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="s2">&#34;5432:5432&#34;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&#34;CMD-SHELL&#34;</span><span class="p">,</span><span class="w"> </span><span class="s2">&#34;pg_isready -U myapp_user -d myapp_db&#34;</span><span class="w"> </span><span class="p">]</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l">3s</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l">5s</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="m">5</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l">always</span><span class="w">
-</span></span></span></code></pre></div><h2 id="-final-project-structure">📁 Final project structure</h2>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">myapp
-</span></span><span class="line"><span class="cl">├── cmd
-</span></span><span class="line"><span class="cl">│  ├── api
-</span></span><span class="line"><span class="cl">│  │  └── main.go
-</span></span><span class="line"><span class="cl">│  └── migrate
-</span></span><span class="line"><span class="cl">│     └── main.go
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── migrations
-</span></span><span class="line"><span class="cl">│  └── 00001_create_books_table.sql
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── config
-</span></span><span class="line"><span class="cl">│  └── config.go
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── .env
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── go.mod
-</span></span><span class="line"><span class="cl">├── go.sum
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── docker-compose.yml
-</span></span><span class="line"><span class="cl">└── Dockerfile
-</span></span></code></pre></div><h2 id="-whats-next">👨‍🏫 What&rsquo;s next…</h2>
-<p>In the next article, we&rsquo;ll add the initial API routes to our application.</p>
-
-        </div>
-
-        <footer>
-          
-
-          
-          
-          
-          
-
-          
-          
-          
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          <time datetime="2024-01-21"><i>🕒</i> Updated: 2024-01-21</time>
-          
-          <a href="/docs/database-and-migrations/"><i>﹤</i> Previous</a>
-          
-
-          
-          <a href="/docs/routes-and-openapi-specification/">Next <i>﹥</i></a>
-          
-
-        </footer>
-      </article>
-
-      <aside>
-        <div>
-          <button class="btn"><i>❌</i>Close</button>
-        </div>
-        <strong>On this page</strong>
-        <nav id="TableOfContents">
-  <ul>
-    <li><a href="#populate-environment-variables-with-docker">Populate environment variables with Docker</a>
-      <ul>
-        <li><a href="#1-add-env">1. Add <code>.env</code></a></li>
-        <li><a href="#2-update-docker-composeyml">2. update <code>docker-compose.yml</code></a></li>
-      </ul>
-    </li>
-    <li><a href="#adding-configs-to-the-api">Adding configs to the API</a>
-      <ul>
-        <li><a href="#1-download-and-install-the-packages-and-dependencies">1. Download and install the packages and dependencies</a></li>
-        <li><a href="#2-add-configconfiggo">2. Add <code>config/config.go</code></a></li>
-        <li><a href="#3-update-the-cmdapimaingo-to-read-the-config-from-config">3. Update the <code>cmd/api/main.go</code> to read the config from <code>config</code></a></li>
-        <li><a href="#4-update-the-cmdmigratemaingo-to-read-the-config-from-config">4. Update the <code>cmd/migrate/main.go</code> to read the config from <code>config</code></a></li>
-        <li><a href="#5-run-go-mod-tidy">5. Run <code>go mod tidy</code></a></li>
-      </ul>
-    </li>
-    <li><a href="#running-migrations-on-the-application-startup">Running migrations on the application startup</a></li>
-    <li><a href="#-final-project-structure">📁 Final project structure</a></li>
-    <li><a href="#-whats-next">👨‍🏫 What&rsquo;s next…</a></li>
-  </ul>
-</nav>
-      </aside>
-    </main>
-
-    <footer>
-      <div><i>🧑‍💻</i>Built by and copyright<a href="https://github.com/dumindu" target="_blank">Dumindu Madunuwan</a><i>📅</i> 2019-2024<i>🚀</i> <a href="https://github.com/learning-cloud-native-go" target="_blank">GitHub</a></div>
-      <div>
-        <button class="btn"><i>☀️</i><i>⁄</i><i>🌑</i></button>
-      </div>
-    </footer>
-  </div>
-
-</div>
-
-<div id="body-model-outer"></div>
-<script type="text/javascript" src="/assets/js/docs.min.12ffdc25c0149ef34e761ee54587f2aae17affcb8375298ad2180851930cb142.js" integrity=""></script>
-</body>
-</html>
+<!doctype html><html lang=en-US><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Cloud Native Go Tutorials for Everyone!"><meta name=author content="Dumindu Madunuwan"><meta name=theme-color content="#ffffff" media="(prefers-color-scheme: light)"><meta name=theme-color content="#101010" media="(prefers-color-scheme: dark)"><title>Configurations · Learning Cloud Native Go</title>
+<link rel=canonical href=https://learning-cloud-native-go.github.io/docs/configurations/><link rel=stylesheet href=/assets/css/docs.min.8e9408609771a441499aa5571a4585b0ca95783b842d5c758af5eef1457b0fe0.css integrity><link rel=manifest href=/manifest.json><link rel=icon href=/favicon/favicon.ico><link rel=icon href=/favicon/favicon-16x16.png sizes=16x16 type=image/png><link rel=icon href=/favicon/favicon-32x32.png sizes=32x32 type=image/png><link rel=apple-touch-icon href=/favicon/apple-touch-icon.png sizes=180x180><script async src="https://www.googletagmanager.com/gtag/js?id=G-H3GD0XFJ42"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-H3GD0XFJ42")</script></head><body><div id=outer-wrapper><div id=aside-wrapper><aside><div><button class=btn><i>❌</i>Close</button></div><a href=https://learning-cloud-native-go.github.io/ class=site-logo>Learning Cloud Native Go</a><nav role=navigation><details open><summary>Documentation</summary><ul><li><a href=https://learning-cloud-native-go.github.io/docs/overview/>Overview</a></li></ul></details><details open><summary>Building a Dockerized RESTful API</summary><ul><li><a href=https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application-in-go/>Building a Dockerized RESTful API application in Go</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/hello-world-server/>Hello World server</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/database-and-migrations/>Database and migrations</a></li><li><a class=active href=https://learning-cloud-native-go.github.io/docs/configurations/>Configurations</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/routes-and-openapi-specification/>Routes and OpenAPI specification</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/repository/>Repository</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/error-handling/>Error handling</a></li></ul></details></nav></aside></div><div id=content-wrapper><header><a href=https://learning-cloud-native-go.github.io/ class=site-logo>Learning Cloud Native Go</a></header><main><article><nav><button class=btn><i>⬅️</i> On this section</button>
+<button class=btn>On this page <i>➡️</i></button></nav><header><h1>Configurations</h1><p></p></header><div id=article-body><blockquote class=info><p><strong>👨‍🏫</strong> <strong>Before we start&mldr;</strong></p><ul><li>Configurations can be stored in a variety of formats, such as <code>.xml</code>, <code>.json</code>, <code>.env</code>, <code>.yaml</code>, and <code>.toml</code> files, as well as systems like <a href=https://etcd.io/ target=_blank><code>etcd</code></a>, <a href=https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html target=_blank>AWS Parameter Store</a>, and <a href=https://cloud.google.com/deployment-manager/runtime-configurator/ target=_blank>GCP Runtime Configurator</a>. In this project, we will save the configurations in an <code>.env</code> file and use <code>docker-compose</code> to load them into the development environment.</li><li>Go standard library provides the <a href=https://golang.org/pkg/os/#Getenv target=_blank><code>os.Getenv()</code></a> function to read each environment variable separately. But there are Go libraries such as <a href=https://github.com/spf13/viper target=_blank><code>spf13/viper</code></a>, <a href=https://github.com/kelseyhightower/envconfig target=_blank><code>kelseyhightower/envconfig</code></a>, <a href=https://github.com/caarlos0/env target=_blank><code>caarlos0/env</code></a>, and <a href=https://github.com/joeshaw/envdecode target=_blank><code>joeshaw/envdecode</code></a> to read environment variables in bulk and populate them as a struct. We choose <a href=https://github.com/joeshaw/envdecode target=_blank><code>joeshaw/envdecode</code></a> for this project because it includes validations, zero-dependency, and ease of use.</li></ul></blockquote><h2 id=populate-environment-variables-with-docker>Populate environment variables with Docker</h2><p>💡 We use <code>docker-compose</code> with the <a href=https://docs.docker.com/compose/compose-file/compose-file-v3/#env_file target=_blank><code>env_file</code></a> option to load the environment variables into the development environment. If you are using <code>docker run</code>, you can use the <a href=https://docs.docker.com/engine/reference/commandline/run/#options target=_blank><code>--env-file</code> option</a> with it.</p><h3 id=1-add-env>1. Add <code>.env</code></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-env data-lang=env><span class=line><span class=cl><span class=nv>SERVER_PORT</span><span class=o>=</span><span class=m>8080</span>
+</span></span><span class=line><span class=cl><span class=nv>SERVER_TIMEOUT_READ</span><span class=o>=</span>3s
+</span></span><span class=line><span class=cl><span class=nv>SERVER_TIMEOUT_WRITE</span><span class=o>=</span>5s
+</span></span><span class=line><span class=cl><span class=nv>SERVER_TIMEOUT_IDLE</span><span class=o>=</span>5s
+</span></span><span class=line><span class=cl><span class=nv>SERVER_DEBUG</span><span class=o>=</span><span class=nb>true</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nv>DB_HOST</span><span class=o>=</span>db
+</span></span><span class=line><span class=cl><span class=nv>DB_PORT</span><span class=o>=</span><span class=m>5432</span>
+</span></span><span class=line><span class=cl><span class=nv>DB_USER</span><span class=o>=</span>myapp_user
+</span></span><span class=line><span class=cl><span class=nv>DB_PASS</span><span class=o>=</span>myapp_pass
+</span></span><span class=line><span class=cl><span class=nv>DB_NAME</span><span class=o>=</span>myapp_db
+</span></span><span class=line><span class=cl><span class=nv>DB_DEBUG</span><span class=o>=</span><span class=nb>true</span>
+</span></span></code></pre></div><blockquote><p>💡 <code>SERVER_DEBUG</code> and <code>DB_DEBUG</code> will be utilized with the application logs and the GORM logs in the future steps.</p></blockquote><h3 id=2-update-docker-composeyml>2. update <code>docker-compose.yml</code></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-yml data-lang=yml><span class=line><span class=cl><span class=w>  </span><span class=nt>app</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>build</span><span class=p>:</span><span class=w> </span><span class=l>.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>env_file</span><span class=p>:</span><span class=w> </span><span class=l>.env</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=s2>&#34;8080:8080&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>depends_on</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>db</span><span class=w>
+</span></span></span></code></pre></div><p>Run <code>docker-compose down</code> and <code>docker-compose up</code> to populate the environment variables into the development environment.</p><h2 id=adding-configs-to-the-api>Adding configs to the API</h2><h3 id=1-download-and-install-the-packages-and-dependencies>1. Download and install the packages and dependencies</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=k>go</span> <span class=nx>get</span> <span class=nx>github</span><span class=p>.</span><span class=nx>com</span><span class=o>/</span><span class=nx>joeshaw</span><span class=o>/</span><span class=nx>envdecode</span> 
+</span></span></code></pre></div><h3 id=2-add-configconfiggo>2. Add <code>config/config.go</code></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>config</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;time&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;github.com/joeshaw/envdecode&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Conf</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Server</span> <span class=nx>ConfServer</span>
+</span></span><span class=line><span class=cl>	<span class=nx>DB</span>     <span class=nx>ConfDB</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>ConfServer</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Port</span>         <span class=kt>int</span>           <span class=s>`env:&#34;SERVER_PORT,required&#34;`</span>
+</span></span><span class=line><span class=cl>	<span class=nx>TimeoutRead</span>  <span class=nx>time</span><span class=p>.</span><span class=nx>Duration</span> <span class=s>`env:&#34;SERVER_TIMEOUT_READ,required&#34;`</span>
+</span></span><span class=line><span class=cl>	<span class=nx>TimeoutWrite</span> <span class=nx>time</span><span class=p>.</span><span class=nx>Duration</span> <span class=s>`env:&#34;SERVER_TIMEOUT_WRITE,required&#34;`</span>
+</span></span><span class=line><span class=cl>	<span class=nx>TimeoutIdle</span>  <span class=nx>time</span><span class=p>.</span><span class=nx>Duration</span> <span class=s>`env:&#34;SERVER_TIMEOUT_IDLE,required&#34;`</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Debug</span>        <span class=kt>bool</span>          <span class=s>`env:&#34;SERVER_DEBUG,required&#34;`</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>ConfDB</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Host</span>     <span class=kt>string</span> <span class=s>`env:&#34;DB_HOST,required&#34;`</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Port</span>     <span class=kt>int</span>    <span class=s>`env:&#34;DB_PORT,required&#34;`</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Username</span> <span class=kt>string</span> <span class=s>`env:&#34;DB_USER,required&#34;`</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Password</span> <span class=kt>string</span> <span class=s>`env:&#34;DB_PASS,required&#34;`</span>
+</span></span><span class=line><span class=cl>	<span class=nx>DBName</span>   <span class=kt>string</span> <span class=s>`env:&#34;DB_NAME,required&#34;`</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Debug</span>    <span class=kt>bool</span>   <span class=s>`env:&#34;DB_DEBUG,required&#34;`</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>New</span><span class=p>()</span> <span class=o>*</span><span class=nx>Conf</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kd>var</span> <span class=nx>c</span> <span class=nx>Conf</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>envdecode</span><span class=p>.</span><span class=nf>StrictDecode</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>c</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;Failed to decode: %s&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=o>&amp;</span><span class=nx>c</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>NewDB</span><span class=p>()</span> <span class=o>*</span><span class=nx>ConfDB</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=kd>var</span> <span class=nx>c</span> <span class=nx>ConfDB</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>envdecode</span><span class=p>.</span><span class=nf>StrictDecode</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>c</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;Failed to decode: %s&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=o>&amp;</span><span class=nx>c</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><h3 id=3-update-the-cmdapimaingo-to-read-the-config-from-config>3. Update the <code>cmd/api/main.go</code> to read the config from <code>config</code></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;io&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;net/http&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;myapp/config&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>c</span> <span class=o>:=</span> <span class=nx>config</span><span class=p>.</span><span class=nf>New</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>mux</span> <span class=o>:=</span> <span class=nx>http</span><span class=p>.</span><span class=nf>NewServeMux</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>mux</span><span class=p>.</span><span class=nf>HandleFunc</span><span class=p>(</span><span class=s>&#34;/hello&#34;</span><span class=p>,</span> <span class=nx>hello</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>s</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>http</span><span class=p>.</span><span class=nx>Server</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>Addr</span><span class=p>:</span>         <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;:%d&#34;</span><span class=p>,</span> <span class=nx>c</span><span class=p>.</span><span class=nx>Server</span><span class=p>.</span><span class=nx>Port</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>		<span class=nx>Handler</span><span class=p>:</span>      <span class=nx>mux</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=nx>ReadTimeout</span><span class=p>:</span>  <span class=nx>c</span><span class=p>.</span><span class=nx>Server</span><span class=p>.</span><span class=nx>TimeoutRead</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=nx>WriteTimeout</span><span class=p>:</span> <span class=nx>c</span><span class=p>.</span><span class=nx>Server</span><span class=p>.</span><span class=nx>TimeoutWrite</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=nx>IdleTimeout</span><span class=p>:</span>  <span class=nx>c</span><span class=p>.</span><span class=nx>Server</span><span class=p>.</span><span class=nx>TimeoutIdle</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>log</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;Starting server &#34;</span> <span class=o>+</span> <span class=nx>s</span><span class=p>.</span><span class=nx>Addr</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>s</span><span class=p>.</span><span class=nf>ListenAndServe</span><span class=p>();</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=o>&amp;&amp;</span> <span class=nx>err</span> <span class=o>!=</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ErrServerClosed</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=s>&#34;Server startup failed&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><h3 id=4-update-the-cmdmigratemaingo-to-read-the-config-from-config>4. Update the <code>cmd/migrate/main.go</code> to read the config from <code>config</code></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;flag&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;os&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>_</span> <span class=s>&#34;github.com/jackc/pgx/v5/stdlib&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;github.com/pressly/goose/v3&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;myapp/config&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>const</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=nx>dialect</span>     <span class=p>=</span> <span class=s>&#34;pgx&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmtDBString</span> <span class=p>=</span> <span class=s>&#34;host=%s user=%s password=%s dbname=%s port=%d sslmode=disable&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=nx>flags</span> <span class=p>=</span> <span class=nx>flag</span><span class=p>.</span><span class=nf>NewFlagSet</span><span class=p>(</span><span class=s>&#34;migrate&#34;</span><span class=p>,</span> <span class=nx>flag</span><span class=p>.</span><span class=nx>ExitOnError</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>dir</span>   <span class=p>=</span> <span class=nx>flags</span><span class=p>.</span><span class=nf>String</span><span class=p>(</span><span class=s>&#34;dir&#34;</span><span class=p>,</span> <span class=s>&#34;migrations&#34;</span><span class=p>,</span> <span class=s>&#34;directory with migration files&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>flags</span><span class=p>.</span><span class=nx>Usage</span> <span class=p>=</span> <span class=nx>usage</span>
+</span></span><span class=line><span class=cl>	<span class=nx>flags</span><span class=p>.</span><span class=nf>Parse</span><span class=p>(</span><span class=nx>os</span><span class=p>.</span><span class=nx>Args</span><span class=p>[</span><span class=mi>1</span><span class=p>:])</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>args</span> <span class=o>:=</span> <span class=nx>flags</span><span class=p>.</span><span class=nf>Args</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nb>len</span><span class=p>(</span><span class=nx>args</span><span class=p>)</span> <span class=o>==</span> <span class=mi>0</span> <span class=o>||</span> <span class=nx>args</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>==</span> <span class=s>&#34;-h&#34;</span> <span class=o>||</span> <span class=nx>args</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>==</span> <span class=s>&#34;--help&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>flags</span><span class=p>.</span><span class=nf>Usage</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>command</span> <span class=o>:=</span> <span class=nx>args</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>c</span> <span class=o>:=</span> <span class=nx>config</span><span class=p>.</span><span class=nf>NewDB</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>dbString</span> <span class=o>:=</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=nx>fmtDBString</span><span class=p>,</span> <span class=nx>c</span><span class=p>.</span><span class=nx>Host</span><span class=p>,</span> <span class=nx>c</span><span class=p>.</span><span class=nx>Username</span><span class=p>,</span> <span class=nx>c</span><span class=p>.</span><span class=nx>Password</span><span class=p>,</span> <span class=nx>c</span><span class=p>.</span><span class=nx>DBName</span><span class=p>,</span> <span class=nx>c</span><span class=p>.</span><span class=nx>Port</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>db</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>goose</span><span class=p>.</span><span class=nf>OpenDBWithDriver</span><span class=p>(</span><span class=nx>dialect</span><span class=p>,</span> <span class=nx>dbString</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=nx>err</span><span class=p>.</span><span class=nf>Error</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>defer</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>db</span><span class=p>.</span><span class=nf>Close</span><span class=p>();</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=nx>err</span><span class=p>.</span><span class=nf>Error</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>goose</span><span class=p>.</span><span class=nf>Run</span><span class=p>(</span><span class=nx>command</span><span class=p>,</span> <span class=nx>db</span><span class=p>,</span> <span class=o>*</span><span class=nx>dir</span><span class=p>,</span> <span class=nx>args</span><span class=p>[</span><span class=mi>1</span><span class=p>:]</span><span class=o>...</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;migrate %v: %v&#34;</span><span class=p>,</span> <span class=nx>command</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>Run <code>docker-compose down</code>, <code>docker-compose build</code> and <code>docker-compose up</code> to run the application with the recent changes.</p><h3 id=5-run-go-mod-tidy>5. Run <code>go mod tidy</code></h3><p>When we add a new package and use it, we have to run <code>go mod tidy</code> to reorganize the dependencies in the <code>go.mod</code> file.</p><h2 id=running-migrations-on-the-application-startup>Running migrations on the application startup</h2><blockquote><p>💡 Because we hardcoded <code>localhost</code> for the database host in the previous article, we encountered the <code>migrate up: dial tcp 127.0.0.1:3306: connect: connection refused</code> error with the <code>./bin/migrate up</code> command. But, with the current configurations, we should be able to run <code>./bin/migrate up</code> inside the docker image with the correct host. So, let&rsquo;s automate running migrations on application startup.</p></blockquote><p>Usually, starting the database takes more time. So, we need to wait until the database is up before running database migrations. For this, we use <code>docker-compose</code> <code>db:</code><a href=https://docs.docker.com/compose/compose-file/#healthcheck target=_blank><code>healthcheck</code></a> and <code>app:</code><a href=https://docs.docker.com/compose/compose-file/#depends_on target=_blank><code>depends_on:db:condition</code></a> options.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-yml data-lang=yml><span class=line><span class=cl><span class=nt>version</span><span class=p>:</span><span class=w> </span><span class=s1>&#39;3.9&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>services</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>app</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>build</span><span class=p>:</span><span class=w> </span><span class=l>.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>env_file</span><span class=p>:</span><span class=w> </span><span class=l>.env</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=s2>&#34;8080:8080&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>depends_on</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>db</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>condition</span><span class=p>:</span><span class=w> </span><span class=l>service_healthy</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>command</span><span class=p>:</span><span class=w> </span><span class=p>[</span><span class=w> </span><span class=s2>&#34;sh&#34;</span><span class=p>,</span><span class=w> </span><span class=s2>&#34;-c&#34;</span><span class=p>,</span><span class=w> </span><span class=s2>&#34;/myapp/bin/migrate up &amp;&amp; /myapp/bin/api&#34;</span><span class=w> </span><span class=p>]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>db</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=l>postgres:alpine</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>environment</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>POSTGRES_DB=myapp_db</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>POSTGRES_USER=myapp_user</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>POSTGRES_PASSWORD=myapp_pass</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=s2>&#34;5432:5432&#34;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>healthcheck</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>test</span><span class=p>:</span><span class=w> </span><span class=p>[</span><span class=w> </span><span class=s2>&#34;CMD-SHELL&#34;</span><span class=p>,</span><span class=w> </span><span class=s2>&#34;pg_isready -U myapp_user -d myapp_db&#34;</span><span class=w> </span><span class=p>]</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>interval</span><span class=p>:</span><span class=w> </span><span class=l>3s</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>timeout</span><span class=p>:</span><span class=w> </span><span class=l>5s</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>retries</span><span class=p>:</span><span class=w> </span><span class=m>5</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>restart</span><span class=p>:</span><span class=w> </span><span class=l>always</span><span class=w>
+</span></span></span></code></pre></div><h2 id=-final-project-structure>📁 Final project structure</h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>myapp
+</span></span><span class=line><span class=cl>├── cmd
+</span></span><span class=line><span class=cl>│  ├── api
+</span></span><span class=line><span class=cl>│  │  └── main.go
+</span></span><span class=line><span class=cl>│  └── migrate
+</span></span><span class=line><span class=cl>│     └── main.go
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── migrations
+</span></span><span class=line><span class=cl>│  └── 00001_create_books_table.sql
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── config
+</span></span><span class=line><span class=cl>│  └── config.go
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── .env
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── go.mod
+</span></span><span class=line><span class=cl>├── go.sum
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── docker-compose.yml
+</span></span><span class=line><span class=cl>└── Dockerfile
+</span></span></code></pre></div><h2 id=-whats-next>👨‍🏫 What&rsquo;s next…</h2><p>In the next article, we&rsquo;ll add the initial API routes to our application.</p></div><footer><time datetime=2024-01-21><i>🕒</i> Updated: 2024-01-21</time>
+<a href=https://learning-cloud-native-go.github.io/docs/database-and-migrations/><i>﹤</i> Previous</a>
+<a href=https://learning-cloud-native-go.github.io/docs/routes-and-openapi-specification/>Next <i>﹥</i></a></footer></article><aside><div><button class=btn><i>❌</i>Close</button></div><strong>On this page</strong><nav id=TableOfContents><ul><li><a href=#populate-environment-variables-with-docker>Populate environment variables with Docker</a><ul><li><a href=#1-add-env>1. Add <code>.env</code></a></li><li><a href=#2-update-docker-composeyml>2. update <code>docker-compose.yml</code></a></li></ul></li><li><a href=#adding-configs-to-the-api>Adding configs to the API</a><ul><li><a href=#1-download-and-install-the-packages-and-dependencies>1. Download and install the packages and dependencies</a></li><li><a href=#2-add-configconfiggo>2. Add <code>config/config.go</code></a></li><li><a href=#3-update-the-cmdapimaingo-to-read-the-config-from-config>3. Update the <code>cmd/api/main.go</code> to read the config from <code>config</code></a></li><li><a href=#4-update-the-cmdmigratemaingo-to-read-the-config-from-config>4. Update the <code>cmd/migrate/main.go</code> to read the config from <code>config</code></a></li><li><a href=#5-run-go-mod-tidy>5. Run <code>go mod tidy</code></a></li></ul></li><li><a href=#running-migrations-on-the-application-startup>Running migrations on the application startup</a></li><li><a href=#-final-project-structure>📁 Final project structure</a></li><li><a href=#-whats-next>👨‍🏫 What&rsquo;s next…</a></li></ul></nav></aside></main><footer><div><i>🧑‍💻</i>Built by and copyright<a href=https://github.com/dumindu target=_blank>Dumindu Madunuwan</a><i>📅</i> 2019-2024<i>🚀</i> <a href=https://github.com/learning-cloud-native-go target=_blank>GitHub</a></div><div><button class=btn><i>☀️</i><i>⁄</i><i>🌑</i></button></div></footer></div></div><div id=body-model-outer></div><script type=text/javascript src=/assets/js/docs.min.12ffdc25c0149ef34e761ee54587f2aae17affcb8375298ad2180851930cb142.js integrity></script></body></html>

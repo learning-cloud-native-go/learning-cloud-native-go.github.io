@@ -1,397 +1,147 @@
-<!DOCTYPE html>
-<html lang="en-US">
-
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Cloud Native Go Tutorials for Everyone!">
-  <meta name="author" content="Dumindu Madunuwan">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#101010" media="(prefers-color-scheme: dark)">
-  
-
-  <title>Database and migrations · Learning Cloud Native Go</title>
-  <link rel="canonical" href="https://learning-cloud-native-go.github.io/docs/database-and-migrations/">
-  <link rel="stylesheet" href="/assets/css/docs.min.a6d52fd5461b892ef08a611a76391f8b999c6aca8f2a2317d6827c1143c0ca03.css" integrity="">
-
-  <link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/favicon/favicon.ico">
-<link rel="icon" href="/favicon/favicon-16x16.png" sizes="16x16" type="image/png">
-<link rel="icon" href="/favicon/favicon-32x32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" sizes="180x180">
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-H3GD0XFJ42"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-H3GD0XFJ42');
-</script>
-</head>
-
-<body>
-
-<div id="outer-wrapper">
-
-  <div id="aside-wrapper">
-    <aside>
-      <div>
-        <button class="btn"><i>❌</i>Close</button>
-      </div>
-      <a href="/" class="site-logo">Learning Cloud Native Go</a>
-
-      <nav role="navigation">
-        <details open>
-          <summary>Documentation</summary>
-          <ul><li>
-              
-                
-                <a class="" href="/docs/overview/">
-                  
-                  Overview
-                  
-                </a>
-              
-            </li>
-
-          </ul>
-        </details><details open>
-          <summary>Building a Dockerized RESTful API</summary>
-          <ul><li>
-              
-                
-                <a class="" href="/docs/building-a-dockerized-restful-api-application-in-go/">
-                  
-                  Overview
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/hello-world-server/">
-                  
-                  Hello World server
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="active" href="/docs/database-and-migrations/">
-                  
-                  Database and migrations
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/configurations/">
-                  
-                  Configurations
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/routes-and-openapi-specification/">
-                  
-                  Routes and OpenAPI specification
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/repository/">
-                  
-                  Repository
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/error-handling/">
-                  
-                  Error handling
-                  
-                </a>
-              
-            </li>
-
-          </ul>
-        </details>
-      </nav>
-    </aside>
-  </div>
-
-  <div id="content-wrapper">
-    <header>
-      <a href="/" class="site-logo">Learning Cloud Native Go</a>
-    </header>
-
-    <main>
-      <article>
-        <nav>
-          <button class="btn"><i>⬅️</i> On this section</button>
-          <button class="btn">On this page <i>➡️</i></button>
-        </nav>
-        <header>
-          <h1>Database and migrations</h1>
-          <p></p>
-        </header>
-        <div id="article-body">
-          <blockquote class="info"><p><strong>👨‍🏫</strong> <strong>Before we start&hellip;</strong></p>
-<ul>
-<li>We&rsquo;ll run a Postgres database via <code>docker-compose</code>.</li>
-<li>There are a few popular database migration tools in the Go ecosystem, like <a href="https://github.com/golang-migrate/migrate"><code>golang-migrate/migrate</code></a>, <a href="https://github.com/pressly/goose"><code>pressly/goose</code></a>, <a href="http://gorm.io/docs/migration.html">GORM migrations</a>, etc. We selected <a href="https://github.com/pressly/goose"><code>pressly/goose</code></a> due to its simplicity, lesser resource usage, and customizability. But, instead of using its prebuilt binaries, we&rsquo;ll build a custom binary with static drivers, settings, and more simplified commands.</li>
-<li>⭐ We&rsquo;ll store all <code>SQL</code> database migration files in the <code>migrations</code> folder in the project root.</li>
-</ul>
-</blockquote>
-<h2 id="database-design">Database Design</h2>
-<p>In this article series, we are building a RESTful CRUD API for a simple bookshelf. We&rsquo;ll use the <a href="https://en.wikipedia.org/wiki/PostgreSQL">Postgres</a> database and a table called &ldquo;books&rdquo; to store the data, which has the following columns.</p>
-<table>
-<thead>
-<tr>
-<th>Column Name</th>
-<th>Datatype</th>
-<th>Not Null</th>
-<th>Primary Key</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>id</td>
-<td>UUID</td>
-<td>✅</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>title</td>
-<td>TEXT</td>
-<td>✅</td>
-<td></td>
-</tr>
-<tr>
-<td>author</td>
-<td>TEXT</td>
-<td>✅</td>
-<td></td>
-</tr>
-<tr>
-<td>published_date</td>
-<td>DATE</td>
-<td>✅</td>
-<td></td>
-</tr>
-<tr>
-<td>image_url</td>
-<td>TEXT</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>description</td>
-<td>TEXT</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>created_at</td>
-<td>TIMESTAMP</td>
-<td>✅</td>
-<td></td>
-</tr>
-<tr>
-<td>updated_at</td>
-<td>TIMESTAMP</td>
-<td>✅</td>
-<td></td>
-</tr>
-<tr>
-<td>deleted_at</td>
-<td>TIMESTAMP</td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<h2 id="development-database">Development Database</h2>
-<p>We&rsquo;ll use the <a href="https://hub.docker.com/_/postgres">official Postgres Alpine Docker image</a> to build our development database.</p>
-<p>Let&rsquo;s update the <code>docker-compose.yml</code> file,</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="line"><span class="cl">version: <span class="s1">&#39;3&#39;</span><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>services:<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>  app:<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>    build: .<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>    ports:<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>      - <span class="s2">&#34;8080:8080&#34;</span><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>    depends_on:<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>      - db<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>  db:<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>    image: postgres:alpine<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>    environment:<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>      - <span class="nv">POSTGRES_DB</span><span class="o">=</span>myapp_db<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>      - <span class="nv">POSTGRES_USER</span><span class="o">=</span>myapp_user<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>      - <span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>myapp_pass<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>    ports:<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>      - <span class="s2">&#34;5432:5432&#34;</span><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span>    restart: always<span class="err">
-</span></span></span></code></pre></div><p>Run <code>docker-compose down</code> and <code>docker-compose up</code> to rerun the application with the database. Or, you can run <code>docker-compose up db</code> to run only the database.</p>
-<p>We can use <code>docker-compose ps</code> commands to see more info about the running containers.</p>
-<pre tabindex="0"><code>NAME                COMMAND                  SERVICE             STATUS              PORTS
+<!doctype html><html lang=en-US><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Cloud Native Go Tutorials for Everyone!"><meta name=author content="Dumindu Madunuwan"><meta name=theme-color content="#ffffff" media="(prefers-color-scheme: light)"><meta name=theme-color content="#101010" media="(prefers-color-scheme: dark)"><title>Database and migrations · Learning Cloud Native Go</title>
+<link rel=canonical href=https://learning-cloud-native-go.github.io/docs/database-and-migrations/><link rel=stylesheet href=/assets/css/docs.min.8e9408609771a441499aa5571a4585b0ca95783b842d5c758af5eef1457b0fe0.css integrity><link rel=manifest href=/manifest.json><link rel=icon href=/favicon/favicon.ico><link rel=icon href=/favicon/favicon-16x16.png sizes=16x16 type=image/png><link rel=icon href=/favicon/favicon-32x32.png sizes=32x32 type=image/png><link rel=apple-touch-icon href=/favicon/apple-touch-icon.png sizes=180x180><script async src="https://www.googletagmanager.com/gtag/js?id=G-H3GD0XFJ42"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-H3GD0XFJ42")</script></head><body><div id=outer-wrapper><div id=aside-wrapper><aside><div><button class=btn><i>❌</i>Close</button></div><a href=https://learning-cloud-native-go.github.io/ class=site-logo>Learning Cloud Native Go</a><nav role=navigation><details open><summary>Documentation</summary><ul><li><a href=https://learning-cloud-native-go.github.io/docs/overview/>Overview</a></li></ul></details><details open><summary>Building a Dockerized RESTful API</summary><ul><li><a href=https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application-in-go/>Building a Dockerized RESTful API application in Go</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/hello-world-server/>Hello World server</a></li><li><a class=active href=https://learning-cloud-native-go.github.io/docs/database-and-migrations/>Database and migrations</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/configurations/>Configurations</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/routes-and-openapi-specification/>Routes and OpenAPI specification</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/repository/>Repository</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/error-handling/>Error handling</a></li></ul></details></nav></aside></div><div id=content-wrapper><header><a href=https://learning-cloud-native-go.github.io/ class=site-logo>Learning Cloud Native Go</a></header><main><article><nav><button class=btn><i>⬅️</i> On this section</button>
+<button class=btn>On this page <i>➡️</i></button></nav><header><h1>Database and migrations</h1><p></p></header><div id=article-body><blockquote class=info><p><strong>👨‍🏫</strong> <strong>Before we start&mldr;</strong></p><ul><li>We&rsquo;ll run a Postgres database via <code>docker-compose</code>.</li><li>There are a few popular database migration tools in the Go ecosystem, like <a href=https://github.com/golang-migrate/migrate target=_blank><code>golang-migrate/migrate</code></a>, <a href=https://github.com/pressly/goose target=_blank><code>pressly/goose</code></a>, <a href=http://gorm.io/docs/migration.html target=_blank>GORM migrations</a>, etc. We selected <a href=https://github.com/pressly/goose target=_blank><code>pressly/goose</code></a> due to its simplicity, lesser resource usage, and customizability. But, instead of using its prebuilt binaries, we&rsquo;ll build a custom binary with static drivers, settings, and more simplified commands.</li><li>⭐ We&rsquo;ll store all <code>SQL</code> database migration files in the <code>migrations</code> folder in the project root.</li></ul></blockquote><h2 id=database-design>Database Design</h2><p>In this article series, we are building a RESTful CRUD API for a simple bookshelf. We&rsquo;ll use the <a href=https://en.wikipedia.org/wiki/PostgreSQL target=_blank>Postgres</a> database and a table called &ldquo;books&rdquo; to store the data, which has the following columns.</p><table><thead><tr><th>Column Name</th><th>Datatype</th><th>Not Null</th><th>Primary Key</th></tr></thead><tbody><tr><td>id</td><td>UUID</td><td>✅</td><td>✅</td></tr><tr><td>title</td><td>TEXT</td><td>✅</td><td></td></tr><tr><td>author</td><td>TEXT</td><td>✅</td><td></td></tr><tr><td>published_date</td><td>DATE</td><td>✅</td><td></td></tr><tr><td>image_url</td><td>TEXT</td><td></td><td></td></tr><tr><td>description</td><td>TEXT</td><td></td><td></td></tr><tr><td>created_at</td><td>TIMESTAMP</td><td>✅</td><td></td></tr><tr><td>updated_at</td><td>TIMESTAMP</td><td>✅</td><td></td></tr><tr><td>deleted_at</td><td>TIMESTAMP</td><td></td><td></td></tr></tbody></table><h2 id=development-database>Development Database</h2><p>We&rsquo;ll use the <a href=https://hub.docker.com/_/postgres target=_blank>official Postgres Alpine Docker image</a> to build our development database.</p><p>Let&rsquo;s update the <code>docker-compose.yml</code> file,</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-dockerfile data-lang=dockerfile><span class=line><span class=cl>version: <span class=s1>&#39;3&#39;</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>services:<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>  app:<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>    build: .<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>    ports:<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>      - <span class=s2>&#34;8080:8080&#34;</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>    depends_on:<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>      - db<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>  db:<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>    image: postgres:alpine<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>    environment:<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>      - <span class=nv>POSTGRES_DB</span><span class=o>=</span>myapp_db<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>      - <span class=nv>POSTGRES_USER</span><span class=o>=</span>myapp_user<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>      - <span class=nv>POSTGRES_PASSWORD</span><span class=o>=</span>myapp_pass<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>    ports:<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>      - <span class=s2>&#34;5432:5432&#34;</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span>    restart: always<span class=err>
+</span></span></span></code></pre></div><p>Run <code>docker-compose down</code> and <code>docker-compose up</code> to rerun the application with the database. Or, you can run <code>docker-compose up db</code> to run only the database.</p><p>We can use <code>docker-compose ps</code> commands to see more info about the running containers.</p><pre tabindex=0><code>NAME                COMMAND                  SERVICE             STATUS              PORTS
 myapp-app-1         &#34;/myapp/bin/api&#34;         app                 running             0.0.0.0:8080-&gt;8080/tcp
 myapp-db-1          &#34;docker-entrypoint.s…&#34;   db                  running             0.0.0.0:5432-&gt;5432/tcp
-</code></pre><p>You can use any PostgreSQL client like <a href="https://dbeaver.io/">DBeaver</a>, <a href="https://github.com/beekeeper-studio/beekeeper-studio">Beekeeper studio</a> to connect to the database. But still it&rsquo;s just an empty database, because we haven&rsquo;t add any database migrations so far.</p>
-<h2 id="migrate-app"><code>migrate</code> app</h2>
-<h3 id="1-the-migrations-folder">1. The <code>migrations</code> folder</h3>
-<p>As mentioned earlier, we store all <code>sql</code> database migration files in the <code>migrations</code> folder in the project root. So, let&rsquo;s create the <code>migrations</code> in project root.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">mkdir migrations
-</span></span></code></pre></div><h3 id="2-download-and-install-the-packages-and-dependencies">2. Download and install the packages and dependencies</h3>
-<p>Let&rsquo;s run the following commands to download and install <code>pressly/goose</code> and the dependency <code>jackc/pgx</code> packages.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="k">go</span> <span class="nx">get</span> <span class="nx">github</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">pressly</span><span class="o">/</span><span class="nx">goose</span><span class="o">/</span><span class="nx">v3</span>
-</span></span><span class="line"><span class="cl"><span class="k">go</span> <span class="nx">get</span> <span class="nx">github</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">jackc</span><span class="o">/</span><span class="nx">pgx</span><span class="o">/</span><span class="nx">v5</span>
-</span></span></code></pre></div><p>The <code>go get</code> command updates the <code>go.mod</code> and <code>go.sum</code> files to store the direct and indirect dependencies of our application. You should see above packages as indirect dependencies on the <code>go.mod</code> file because still we haven&rsquo;t used them in our code.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">module</span> <span class="nx">myapp</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">go</span> <span class="mf">1.19</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nf">require</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">    <span class="nx">github</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">jackc</span><span class="o">/</span><span class="nx">pgpassfile</span> <span class="nx">v1</span><span class="mf">.0.0</span> <span class="c1">// indirect
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">github</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">jackc</span><span class="o">/</span><span class="nx">pgservicefile</span> <span class="nx">v0</span><span class="mf">.0.0</span><span class="o">-</span><span class="mi">20221227161230</span><span class="o">-</span><span class="mi">091</span><span class="nx">c0ba34f0a</span> <span class="c1">// indirect
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">github</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">jackc</span><span class="o">/</span><span class="nx">pgx</span><span class="o">/</span><span class="nx">v5</span> <span class="nx">v5</span><span class="mf">.2.0</span> <span class="c1">// indirect
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">github</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">pressly</span><span class="o">/</span><span class="nx">goose</span><span class="o">/</span><span class="nx">v3</span> <span class="nx">v3</span><span class="mf">.8.0</span> <span class="c1">// indirect
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">golang</span><span class="p">.</span><span class="nx">org</span><span class="o">/</span><span class="nx">x</span><span class="o">/</span><span class="nx">crypto</span> <span class="nx">v0</span><span class="mf">.5.0</span> <span class="c1">// indirect
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">golang</span><span class="p">.</span><span class="nx">org</span><span class="o">/</span><span class="nx">x</span><span class="o">/</span><span class="nx">text</span> <span class="nx">v0</span><span class="mf">.6.0</span> <span class="c1">// indirect
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">)</span>
-</span></span></code></pre></div><p>This is the first time we install a third party package via the <code>go get</code> command. You should see newly created <code>go.sum</code> file with the cryptographic hashes of the above package versions.</p>
-<h3 id="3-cmdmigratemaingo">3. <code>cmd/migrate/main.go</code></h3>
-<p>The <a href="https://github.com/pressly/goose/tree/master/examples/go-migrations"><code>examples</code></a> folder in the Goose repository shows how to create a custom Goose binary. But we change the code a bit to tweak the CLI to make the database drivers, connection settings and <code>migrations</code> folder fixed and make the commands more user-friendly.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;flag&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;log&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;os&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">_</span> <span class="s">&#34;github.com/jackc/pgx/v5/stdlib&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/pressly/goose/v3&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">const</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">dialect</span>  <span class="p">=</span> <span class="s">&#34;pgx&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">dbString</span> <span class="p">=</span> <span class="s">&#34;host=localhost user=myapp_user password=myapp_pass dbname=myapp_db port=5432 sslmode=disable&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">flags</span> <span class="p">=</span> <span class="nx">flag</span><span class="p">.</span><span class="nf">NewFlagSet</span><span class="p">(</span><span class="s">&#34;migrate&#34;</span><span class="p">,</span> <span class="nx">flag</span><span class="p">.</span><span class="nx">ExitOnError</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">dir</span>   <span class="p">=</span> <span class="nx">flags</span><span class="p">.</span><span class="nf">String</span><span class="p">(</span><span class="s">&#34;dir&#34;</span><span class="p">,</span> <span class="s">&#34;migrations&#34;</span><span class="p">,</span> <span class="s">&#34;directory with migration files&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">flags</span><span class="p">.</span><span class="nx">Usage</span> <span class="p">=</span> <span class="nx">usage</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">flags</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">args</span> <span class="o">:=</span> <span class="nx">flags</span><span class="p">.</span><span class="nf">Args</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#34;-h&#34;</span> <span class="o">||</span> <span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#34;--help&#34;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">flags</span><span class="p">.</span><span class="nf">Usage</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">command</span> <span class="o">:=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">goose</span><span class="p">.</span><span class="nf">OpenDBWithDriver</span><span class="p">(</span><span class="nx">dialect</span><span class="p">,</span> <span class="nx">dbString</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">db</span><span class="p">.</span><span class="nf">Close</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nf">Error</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">goose</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="nx">command</span><span class="p">,</span> <span class="nx">db</span><span class="p">,</span> <span class="o">*</span><span class="nx">dir</span><span class="p">,</span> <span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">...</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatalf</span><span class="p">(</span><span class="s">&#34;migrate %v: %v&#34;</span><span class="p">,</span> <span class="nx">command</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">usage</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">usagePrefix</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">flags</span><span class="p">.</span><span class="nf">PrintDefaults</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">usageCommands</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">var</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">usagePrefix</span> <span class="p">=</span> <span class="s">`Usage: migrate COMMAND
-</span></span></span><span class="line"><span class="cl"><span class="s">Examples:
-</span></span></span><span class="line"><span class="cl"><span class="s">    migrate status
-</span></span></span><span class="line"><span class="cl"><span class="s">`</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">usageCommands</span> <span class="p">=</span> <span class="s">`
-</span></span></span><span class="line"><span class="cl"><span class="s">Commands:
-</span></span></span><span class="line"><span class="cl"><span class="s">    up                   Migrate the DB to the most recent version available
-</span></span></span><span class="line"><span class="cl"><span class="s">    up-by-one            Migrate the DB up by 1
-</span></span></span><span class="line"><span class="cl"><span class="s">    up-to VERSION        Migrate the DB to a specific VERSION
-</span></span></span><span class="line"><span class="cl"><span class="s">    down                 Roll back the version by 1
-</span></span></span><span class="line"><span class="cl"><span class="s">    down-to VERSION      Roll back to a specific VERSION
-</span></span></span><span class="line"><span class="cl"><span class="s">    redo                 Re-run the latest migration
-</span></span></span><span class="line"><span class="cl"><span class="s">    reset                Roll back all migrations
-</span></span></span><span class="line"><span class="cl"><span class="s">    status               Dump the migration status for the current DB
-</span></span></span><span class="line"><span class="cl"><span class="s">    version              Print the current version of the database
-</span></span></span><span class="line"><span class="cl"><span class="s">    create NAME [sql|go] Creates new migration file with the current timestamp
-</span></span></span><span class="line"><span class="cl"><span class="s">    fix                  Apply sequential ordering to migrations`</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span></code></pre></div><h3 id="4-run-go-mod-tidy">4. Run <code>go mod tidy</code></h3>
-<p><a href="https://go.dev/ref/mod#go-mod-tidy">📖</a> <code>go mod tidy</code> ensures that the <code>go.mod</code> file matches the source code in the module. It adds any missing module requirements necessary to build the current module’s packages and dependencies, and it removes requirements on modules that don’t provide any relevant packages. It also adds any missing entries to <code>go.sum</code> and removes unnecessary entries.</p>
-<p>After running <code>go mod tidy</code>, the <code>jackc/pgx</code> and <code>pressly/goose</code> packages should appear as direct dependencies in the <code>go.mod</code> file, because we now use them in <code>cmd/migrate/main.go</code> file.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">module</span> <span class="nx">myapp</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="k">go</span> <span class="mf">1.19</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nf">require</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">github</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">jackc</span><span class="o">/</span><span class="nx">pgx</span><span class="o">/</span><span class="nx">v5</span> <span class="nx">v5</span><span class="mf">.2.0</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">github</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">pressly</span><span class="o">/</span><span class="nx">goose</span><span class="o">/</span><span class="nx">v3</span> <span class="nx">v3</span><span class="mf">.8.0</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="nf">require</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">github</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">jackc</span><span class="o">/</span><span class="nx">pgpassfile</span> <span class="nx">v1</span><span class="mf">.0.0</span> <span class="c1">// indirect
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">github</span><span class="p">.</span><span class="nx">com</span><span class="o">/</span><span class="nx">jackc</span><span class="o">/</span><span class="nx">pgservicefile</span> <span class="nx">v0</span><span class="mf">.0.0</span><span class="o">-</span><span class="mi">20221227161230</span><span class="o">-</span><span class="mi">091</span><span class="nx">c0ba34f0a</span> <span class="c1">// indirect
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">golang</span><span class="p">.</span><span class="nx">org</span><span class="o">/</span><span class="nx">x</span><span class="o">/</span><span class="nx">crypto</span> <span class="nx">v0</span><span class="mf">.5.0</span> <span class="c1">// indirect
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">golang</span><span class="p">.</span><span class="nx">org</span><span class="o">/</span><span class="nx">x</span><span class="o">/</span><span class="nx">text</span> <span class="nx">v0</span><span class="mf">.6.0</span> <span class="c1">// indirect
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">)</span>
-</span></span></code></pre></div><h3 id="5-update-dockerfile">5. Update <code>Dockerfile</code></h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-dockerfile" data-lang="dockerfile"><span class="line"><span class="cl"><span class="k">FROM</span><span class="s"> golang:alpine</span><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">WORKDIR</span><span class="s"> /myapp</span><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">COPY</span> go.mod go.sum ./<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> go mod download<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">COPY</span> . .<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">RUN</span> go build -o ./bin/api ./cmd/api <span class="se">\
-</span></span></span><span class="line"><span class="cl"><span class="se"></span>    <span class="o">&amp;&amp;</span> go build -o ./bin/migrate ./cmd/migrate<span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">CMD</span> <span class="p">[</span><span class="s2">&#34;/myapp/bin/api&#34;</span><span class="p">]</span><span class="err">
-</span></span></span><span class="line"><span class="cl"><span class="err"></span><span class="k">EXPOSE</span><span class="s"> 8080</span><span class="err">
-</span></span></span></code></pre></div><p>Few important things here,</p>
-<ul>
-<li>We run <a href="https://go.dev/ref/mod#go-mod-download"><code>go mod download</code></a> with the local <a href="https://go.dev/ref/mod#glos-module-cache">module cache</a> and then copy to the docker image.</li>
-<li>We build the <code>migrate</code> app binary inside the <code>bin</code> folder.</li>
-</ul>
-<h2 id="migrate-commands"><code>migrate</code> commands</h2>
-<blockquote>
-<p>⭐️ If you try to run <code>./bin/migrate up</code> inside the docker image, it will give the following error; <code>migrate up: dial tcp 127.0.0.1:3306: connect: connection refused</code>. This is because we hardcoded <code>const dbString = &quot;host=localhost ...&quot;</code> in the <code>cmd/migrate/main.go</code> but the Docker network assigns a different IP address to each container (💡Use <code>docker exec myapp-db-1 cat /etc/hosts</code> to check the IP of the Postgres Docker container).</p>
-<p>⭐ As a result, we can&rsquo;t test <code>migrate</code> commands other than <code>./bin/migrate -h</code> inside the docker image until we configure our applications in the next article. Until then, let&rsquo;s run <code>migrate</code> commands directly, via <code>go run ./cmd/migrate</code>.</p>
-</blockquote>
-<h3 id="migrate--h"><code>migrate -h</code></h3>
-<p>We can use <code>go run ./cmd/migrate -h</code> to test it locally. You should see the list of commands it supports.</p>
-<pre tabindex="0"><code>Usage: migrate COMMAND
+</code></pre><p>You can use any PostgreSQL client like <a href=https://dbeaver.io/ target=_blank>DBeaver</a>, <a href=https://github.com/beekeeper-studio/beekeeper-studio target=_blank>Beekeeper studio</a> to connect to the database. But still it&rsquo;s just an empty database, because we haven&rsquo;t add any database migrations so far.</p><h2 id=migrate-app><code>migrate</code> app</h2><h3 id=1-the-migrations-folder>1. The <code>migrations</code> folder</h3><p>As mentioned earlier, we store all <code>sql</code> database migration files in the <code>migrations</code> folder in the project root. So, let&rsquo;s create the <code>migrations</code> in project root.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>mkdir migrations
+</span></span></code></pre></div><h3 id=2-download-and-install-the-packages-and-dependencies>2. Download and install the packages and dependencies</h3><p>Let&rsquo;s run the following commands to download and install <code>pressly/goose</code> and the dependency <code>jackc/pgx</code> packages.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=k>go</span> <span class=nx>get</span> <span class=nx>github</span><span class=p>.</span><span class=nx>com</span><span class=o>/</span><span class=nx>pressly</span><span class=o>/</span><span class=nx>goose</span><span class=o>/</span><span class=nx>v3</span>
+</span></span><span class=line><span class=cl><span class=k>go</span> <span class=nx>get</span> <span class=nx>github</span><span class=p>.</span><span class=nx>com</span><span class=o>/</span><span class=nx>jackc</span><span class=o>/</span><span class=nx>pgx</span><span class=o>/</span><span class=nx>v5</span>
+</span></span></code></pre></div><p>The <code>go get</code> command updates the <code>go.mod</code> and <code>go.sum</code> files to store the direct and indirect dependencies of our application. You should see above packages as indirect dependencies on the <code>go.mod</code> file because still we haven&rsquo;t used them in our code.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=nx>module</span> <span class=nx>myapp</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>go</span> <span class=mf>1.19</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nf>require</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=nx>github</span><span class=p>.</span><span class=nx>com</span><span class=o>/</span><span class=nx>jackc</span><span class=o>/</span><span class=nx>pgpassfile</span> <span class=nx>v1</span><span class=mf>.0.0</span> <span class=c1>// indirect</span>
+</span></span><span class=line><span class=cl>    <span class=nx>github</span><span class=p>.</span><span class=nx>com</span><span class=o>/</span><span class=nx>jackc</span><span class=o>/</span><span class=nx>pgservicefile</span> <span class=nx>v0</span><span class=mf>.0.0</span><span class=o>-</span><span class=mi>20221227161230</span><span class=o>-</span><span class=mi>091</span><span class=nx>c0ba34f0a</span> <span class=c1>// indirect</span>
+</span></span><span class=line><span class=cl>    <span class=nx>github</span><span class=p>.</span><span class=nx>com</span><span class=o>/</span><span class=nx>jackc</span><span class=o>/</span><span class=nx>pgx</span><span class=o>/</span><span class=nx>v5</span> <span class=nx>v5</span><span class=mf>.2.0</span> <span class=c1>// indirect</span>
+</span></span><span class=line><span class=cl>    <span class=nx>github</span><span class=p>.</span><span class=nx>com</span><span class=o>/</span><span class=nx>pressly</span><span class=o>/</span><span class=nx>goose</span><span class=o>/</span><span class=nx>v3</span> <span class=nx>v3</span><span class=mf>.8.0</span> <span class=c1>// indirect</span>
+</span></span><span class=line><span class=cl>    <span class=nx>golang</span><span class=p>.</span><span class=nx>org</span><span class=o>/</span><span class=nx>x</span><span class=o>/</span><span class=nx>crypto</span> <span class=nx>v0</span><span class=mf>.5.0</span> <span class=c1>// indirect</span>
+</span></span><span class=line><span class=cl>    <span class=nx>golang</span><span class=p>.</span><span class=nx>org</span><span class=o>/</span><span class=nx>x</span><span class=o>/</span><span class=nx>text</span> <span class=nx>v0</span><span class=mf>.6.0</span> <span class=c1>// indirect</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span></code></pre></div><p>This is the first time we install a third party package via the <code>go get</code> command. You should see newly created <code>go.sum</code> file with the cryptographic hashes of the above package versions.</p><h3 id=3-cmdmigratemaingo>3. <code>cmd/migrate/main.go</code></h3><p>The <a href=https://github.com/pressly/goose/tree/master/examples/go-migrations target=_blank><code>examples</code></a> folder in the Goose repository shows how to create a custom Goose binary. But we change the code a bit to tweak the CLI to make the database drivers, connection settings and <code>migrations</code> folder fixed and make the commands more user-friendly.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;flag&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;os&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>_</span> <span class=s>&#34;github.com/jackc/pgx/v5/stdlib&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;github.com/pressly/goose/v3&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>const</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=nx>dialect</span>  <span class=p>=</span> <span class=s>&#34;pgx&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=nx>dbString</span> <span class=p>=</span> <span class=s>&#34;host=localhost user=myapp_user password=myapp_pass dbname=myapp_db port=5432 sslmode=disable&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=nx>flags</span> <span class=p>=</span> <span class=nx>flag</span><span class=p>.</span><span class=nf>NewFlagSet</span><span class=p>(</span><span class=s>&#34;migrate&#34;</span><span class=p>,</span> <span class=nx>flag</span><span class=p>.</span><span class=nx>ExitOnError</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>dir</span>   <span class=p>=</span> <span class=nx>flags</span><span class=p>.</span><span class=nf>String</span><span class=p>(</span><span class=s>&#34;dir&#34;</span><span class=p>,</span> <span class=s>&#34;migrations&#34;</span><span class=p>,</span> <span class=s>&#34;directory with migration files&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>flags</span><span class=p>.</span><span class=nx>Usage</span> <span class=p>=</span> <span class=nx>usage</span>
+</span></span><span class=line><span class=cl>	<span class=nx>flags</span><span class=p>.</span><span class=nf>Parse</span><span class=p>(</span><span class=nx>os</span><span class=p>.</span><span class=nx>Args</span><span class=p>[</span><span class=mi>1</span><span class=p>:])</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>args</span> <span class=o>:=</span> <span class=nx>flags</span><span class=p>.</span><span class=nf>Args</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nb>len</span><span class=p>(</span><span class=nx>args</span><span class=p>)</span> <span class=o>==</span> <span class=mi>0</span> <span class=o>||</span> <span class=nx>args</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>==</span> <span class=s>&#34;-h&#34;</span> <span class=o>||</span> <span class=nx>args</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span> <span class=o>==</span> <span class=s>&#34;--help&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>flags</span><span class=p>.</span><span class=nf>Usage</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>command</span> <span class=o>:=</span> <span class=nx>args</span><span class=p>[</span><span class=mi>0</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>db</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>goose</span><span class=p>.</span><span class=nf>OpenDBWithDriver</span><span class=p>(</span><span class=nx>dialect</span><span class=p>,</span> <span class=nx>dbString</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=nx>err</span><span class=p>.</span><span class=nf>Error</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>defer</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>db</span><span class=p>.</span><span class=nf>Close</span><span class=p>();</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=nx>err</span><span class=p>.</span><span class=nf>Error</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>goose</span><span class=p>.</span><span class=nf>Run</span><span class=p>(</span><span class=nx>command</span><span class=p>,</span> <span class=nx>db</span><span class=p>,</span> <span class=o>*</span><span class=nx>dir</span><span class=p>,</span> <span class=nx>args</span><span class=p>[</span><span class=mi>1</span><span class=p>:]</span><span class=o>...</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Fatalf</span><span class=p>(</span><span class=s>&#34;migrate %v: %v&#34;</span><span class=p>,</span> <span class=nx>command</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>usage</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>usagePrefix</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>flags</span><span class=p>.</span><span class=nf>PrintDefaults</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>usageCommands</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=nx>usagePrefix</span> <span class=p>=</span> <span class=s>`Usage: migrate COMMAND
+</span></span></span><span class=line><span class=cl><span class=s>Examples:
+</span></span></span><span class=line><span class=cl><span class=s>    migrate status
+</span></span></span><span class=line><span class=cl><span class=s>`</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>usageCommands</span> <span class=p>=</span> <span class=s>`
+</span></span></span><span class=line><span class=cl><span class=s>Commands:
+</span></span></span><span class=line><span class=cl><span class=s>    up                   Migrate the DB to the most recent version available
+</span></span></span><span class=line><span class=cl><span class=s>    up-by-one            Migrate the DB up by 1
+</span></span></span><span class=line><span class=cl><span class=s>    up-to VERSION        Migrate the DB to a specific VERSION
+</span></span></span><span class=line><span class=cl><span class=s>    down                 Roll back the version by 1
+</span></span></span><span class=line><span class=cl><span class=s>    down-to VERSION      Roll back to a specific VERSION
+</span></span></span><span class=line><span class=cl><span class=s>    redo                 Re-run the latest migration
+</span></span></span><span class=line><span class=cl><span class=s>    reset                Roll back all migrations
+</span></span></span><span class=line><span class=cl><span class=s>    status               Dump the migration status for the current DB
+</span></span></span><span class=line><span class=cl><span class=s>    version              Print the current version of the database
+</span></span></span><span class=line><span class=cl><span class=s>    create NAME [sql|go] Creates new migration file with the current timestamp
+</span></span></span><span class=line><span class=cl><span class=s>    fix                  Apply sequential ordering to migrations`</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span></code></pre></div><h3 id=4-run-go-mod-tidy>4. Run <code>go mod tidy</code></h3><p><a href=https://go.dev/ref/mod#go-mod-tidy target=_blank>📖</a> <code>go mod tidy</code> ensures that the <code>go.mod</code> file matches the source code in the module. It adds any missing module requirements necessary to build the current module’s packages and dependencies, and it removes requirements on modules that don’t provide any relevant packages. It also adds any missing entries to <code>go.sum</code> and removes unnecessary entries.</p><p>After running <code>go mod tidy</code>, the <code>jackc/pgx</code> and <code>pressly/goose</code> packages should appear as direct dependencies in the <code>go.mod</code> file, because we now use them in <code>cmd/migrate/main.go</code> file.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=nx>module</span> <span class=nx>myapp</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=k>go</span> <span class=mf>1.19</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nf>require</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=nx>github</span><span class=p>.</span><span class=nx>com</span><span class=o>/</span><span class=nx>jackc</span><span class=o>/</span><span class=nx>pgx</span><span class=o>/</span><span class=nx>v5</span> <span class=nx>v5</span><span class=mf>.2.0</span>
+</span></span><span class=line><span class=cl>	<span class=nx>github</span><span class=p>.</span><span class=nx>com</span><span class=o>/</span><span class=nx>pressly</span><span class=o>/</span><span class=nx>goose</span><span class=o>/</span><span class=nx>v3</span> <span class=nx>v3</span><span class=mf>.8.0</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nf>require</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=nx>github</span><span class=p>.</span><span class=nx>com</span><span class=o>/</span><span class=nx>jackc</span><span class=o>/</span><span class=nx>pgpassfile</span> <span class=nx>v1</span><span class=mf>.0.0</span> <span class=c1>// indirect</span>
+</span></span><span class=line><span class=cl>	<span class=nx>github</span><span class=p>.</span><span class=nx>com</span><span class=o>/</span><span class=nx>jackc</span><span class=o>/</span><span class=nx>pgservicefile</span> <span class=nx>v0</span><span class=mf>.0.0</span><span class=o>-</span><span class=mi>20221227161230</span><span class=o>-</span><span class=mi>091</span><span class=nx>c0ba34f0a</span> <span class=c1>// indirect</span>
+</span></span><span class=line><span class=cl>	<span class=nx>golang</span><span class=p>.</span><span class=nx>org</span><span class=o>/</span><span class=nx>x</span><span class=o>/</span><span class=nx>crypto</span> <span class=nx>v0</span><span class=mf>.5.0</span> <span class=c1>// indirect</span>
+</span></span><span class=line><span class=cl>	<span class=nx>golang</span><span class=p>.</span><span class=nx>org</span><span class=o>/</span><span class=nx>x</span><span class=o>/</span><span class=nx>text</span> <span class=nx>v0</span><span class=mf>.6.0</span> <span class=c1>// indirect</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span></code></pre></div><h3 id=5-update-dockerfile>5. Update <code>Dockerfile</code></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-dockerfile data-lang=dockerfile><span class=line><span class=cl><span class=k>FROM</span><span class=s> golang:alpine</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>WORKDIR</span><span class=s> /myapp</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>COPY</span> go.mod go.sum ./<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> go mod download<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>COPY</span> . .<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>RUN</span> go build -o ./bin/api ./cmd/api <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    <span class=o>&amp;&amp;</span> go build -o ./bin/migrate ./cmd/migrate<span class=err>
+</span></span></span><span class=line><span class=cl><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>CMD</span> <span class=p>[</span><span class=s2>&#34;/myapp/bin/api&#34;</span><span class=p>]</span><span class=err>
+</span></span></span><span class=line><span class=cl><span class=err></span><span class=k>EXPOSE</span><span class=s> 8080</span><span class=err>
+</span></span></span></code></pre></div><p>Few important things here,</p><ul><li>We run <a href=https://go.dev/ref/mod#go-mod-download target=_blank><code>go mod download</code></a> with the local <a href=https://go.dev/ref/mod#glos-module-cache target=_blank>module cache</a> and then copy to the docker image.</li><li>We build the <code>migrate</code> app binary inside the <code>bin</code> folder.</li></ul><h2 id=migrate-commands><code>migrate</code> commands</h2><blockquote><p>⭐️ If you try to run <code>./bin/migrate up</code> inside the docker image, it will give the following error; <code>migrate up: dial tcp 127.0.0.1:3306: connect: connection refused</code>. This is because we hardcoded <code>const dbString = "host=localhost ..."</code> in the <code>cmd/migrate/main.go</code> but the Docker network assigns a different IP address to each container (💡Use <code>docker exec myapp-db-1 cat /etc/hosts</code> to check the IP of the Postgres Docker container).</p><p>⭐ As a result, we can&rsquo;t test <code>migrate</code> commands other than <code>./bin/migrate -h</code> inside the docker image until we configure our applications in the next article. Until then, let&rsquo;s run <code>migrate</code> commands directly, via <code>go run ./cmd/migrate</code>.</p></blockquote><h3 id=migrate--h><code>migrate -h</code></h3><p>We can use <code>go run ./cmd/migrate -h</code> to test it locally. You should see the list of commands it supports.</p><pre tabindex=0><code>Usage: migrate COMMAND
 Examples:
     migrate status
 
@@ -410,217 +160,58 @@ Commands:
     version              Print the current version of the database
     create NAME [sql|go] Creates new migration file with the current timestamp
     fix                  Apply sequential ordering to migrations
-</code></pre><h3 id="migrate-version"><code>migrate version</code></h3>
-<p>Database migrations are like version controls for the database. When you run <code>go run ./cmd/migrate version</code>, you should see the timestamp of your current time and <code>goose: version 0</code> text. If you checked the <code>myapp_db</code> database, you should see the new table <code>goose_db_version</code> with a <code>version_id: 0</code> record.</p>
-<h3 id="migrate-status"><code>migrate status</code></h3>
-<p>With <code>go run ./cmd/migrate status</code>, we can see more detailed list of migrations. But, because we haven&rsquo;t added any migrations so far, it will be an empty list with the current timestamp and headings.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">2019/08/05 09:00:00     Applied At                  Migration
-</span></span><span class="line"><span class="cl">2019/08/05 09:00:00     <span class="o">=======================================</span>
-</span></span></code></pre></div><h3 id="migrate-create"><code>migrate create</code></h3>
-<p>Let&rsquo;s create our first migration file by running <code>go run ./cmd/migrate create create_books_table sql</code>. This will create the <code>create_books_table.sql</code> file with the prefix of current timestamp (ex. <code>20190805170000_create_books_table.sql</code>) inside the <code>migrations</code> folder with the following content.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="c1">-- +goose Up
-</span></span></span><span class="line"><span class="cl"><span class="c1">-- +goose StatementBegin
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">SELECT</span><span class="w"> </span><span class="s1">&#39;up SQL query&#39;</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- +goose StatementEnd
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- +goose Down
-</span></span></span><span class="line"><span class="cl"><span class="c1">-- +goose StatementBegin
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">SELECT</span><span class="w"> </span><span class="s1">&#39;down SQL query&#39;</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- +goose StatementEnd
-</span></span></span></code></pre></div><h3 id="migrate-fix"><code>migrate fix</code></h3>
-<p>We can keep migration files/ version numbers either in timestamps or simpler numeric values like 1, 2, 3, etc. By running
-<code>go run ./cmd/migrate fix</code>, our first migration file will be renamed to <code>00001_create_books_table.sql</code>.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="n">RENAMED</span><span class="w"> </span><span class="mi">20190805170000</span><span class="n">_create_books_table</span><span class="p">.</span><span class="k">sql</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="mi">00001</span><span class="n">_create_books_table</span><span class="p">.</span><span class="k">sql</span><span class="w">
-</span></span></span></code></pre></div><h3 id="other-commands">Other commands</h3>
-<blockquote>
-<p>💡We will discuss the remaining commands like <code>migrate up</code>, <code>migrate down</code>, <code>migrate reset</code>, after update our migration file with actual SQL.</p>
-</blockquote>
-<h2 id="sql-migrations">SQL migrations</h2>
-<p>Let&rsquo;s update our <code>00001_create_books_table.sql</code> file with the actual SQL. In the <code>+goose Up</code> section, we should add the <code>CREATE TABLE</code> script and in the <code>+goose Down</code> section, we should add the <code>DROP TABLE</code> script.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="c1">-- +goose Up
-</span></span></span><span class="line"><span class="cl"><span class="c1">-- SQL in this section is executed when the migration is applied.
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">books</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">(</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">id</span><span class="w">             </span><span class="n">UUID</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">title</span><span class="w">          </span><span class="nb">TEXT</span><span class="w">      </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">author</span><span class="w">         </span><span class="nb">TEXT</span><span class="w">      </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">published_date</span><span class="w"> </span><span class="nb">DATE</span><span class="w">      </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">image_url</span><span class="w">      </span><span class="nb">TEXT</span><span class="w">      </span><span class="k">NULL</span><span class="p">,</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">description</span><span class="w">    </span><span class="nb">TEXT</span><span class="w">      </span><span class="k">NULL</span><span class="p">,</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">created_at</span><span class="w">     </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">updated_at</span><span class="w">     </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">deleted_at</span><span class="w">     </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="k">NULL</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">);</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- +goose Down
-</span></span></span><span class="line"><span class="cl"><span class="c1">-- SQL in this section is executed when the migration is rolled back.
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">DROP</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">books</span><span class="p">;</span><span class="w">
-</span></span></span></code></pre></div><p>With the newly added SQL migration, when you run <code>go run ./cmd/migrate status</code>, you should see the <code>Pending</code> migration now.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">2019/08/05 17:00:00     Applied At                  Migration
-</span></span><span class="line"><span class="cl">2019/08/05 17:00:00     <span class="o">=======================================</span>
-</span></span><span class="line"><span class="cl">2019/08/05 17:00:00     Pending                  -- 00001_create_books_table.sql
-</span></span></code></pre></div><h2 id="running-migrations">Running migrations</h2>
-<h3 id="migrate-up"><code>migrate up</code></h3>
-<p>To apply our migration, let&rsquo;s run <code>go run ./cmd/migrate up</code>. Now, you should see new table <code>books</code> and new record on <code>goose_db_version</code> with id: 2 and <code>version_id</code> : 1.</p>
-<p>Also, with <code>go run ./cmd/migrate status</code>, now you should the details of the applied migration.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">2019/08/05 17:00:00     Applied At                  Migration
-</span></span><span class="line"><span class="cl">2019/08/05 17:00:00     <span class="o">=======================================</span>
-</span></span><span class="line"><span class="cl">2019/08/05 17:00:00     Mon Aug  <span class="m">5</span> 17:00:00 <span class="m">2019</span> -- 00001_create_books_table.sql
-</span></span></code></pre></div><blockquote>
-<p>💡As you can see with the <code>go run ./cmd/migrate -h</code>,</p>
-<ul>
-<li><code>migrate up-by-one</code>     Migrate the DB up by 1</li>
-<li><code>migrate up-to VERSION</code> Migrate the DB to a specific VERSION</li>
-</ul>
-</blockquote>
-<h3 id="migrate-down"><code>migrate down</code></h3>
-<p>If you run, <code>go run ./cmd/migrate down</code>, the last migration will be rolled back and you will see the <code>Pending</code> migration with the <code>migrate status</code> command.</p>
-<blockquote>
-<p>💡As you can see with the <code>go run ./cmd/migrate -h</code>,</p>
-<ul>
-<li><code>migrate down</code>             Roll back the version by 1</li>
-<li><code>migrate down-to VERSION</code>  Roll back to a specific VERSION</li>
-<li><code>migrate redo</code>             Re-run the latest migration</li>
-<li><code>migrate reset</code>            Roll back all migrations</li>
-</ul>
-</blockquote>
-<h2 id="-final-project-structure">📁 Final project structure</h2>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">myapp
-</span></span><span class="line"><span class="cl">├── cmd
-</span></span><span class="line"><span class="cl">│  ├── api
-</span></span><span class="line"><span class="cl">│  │  └── main.go
-</span></span><span class="line"><span class="cl">│  └── migrate
-</span></span><span class="line"><span class="cl">│     └── main.go
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── migrations
-</span></span><span class="line"><span class="cl">│  └── 00001_create_books_table.sql
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── go.mod
-</span></span><span class="line"><span class="cl">├── go.sum
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── docker-compose.yml
-</span></span><span class="line"><span class="cl">└── Dockerfile
-</span></span></code></pre></div><h2 id="-whats-next">👨‍🏫 What&rsquo;s next…</h2>
-<p>In the next article, we&rsquo;ll configure our application and run database migrations on application start.</p>
-
-        </div>
-
-        <footer>
-          
-
-          
-          
-          
-          
-
-          
-          
-          
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          <time datetime="2024-01-21"><i>🕒</i> Updated: 2024-01-21</time>
-          
-          <a href="/docs/hello-world-server/"><i>﹤</i> Previous</a>
-          
-
-          
-          <a href="/docs/configurations/">Next <i>﹥</i></a>
-          
-
-        </footer>
-      </article>
-
-      <aside>
-        <div>
-          <button class="btn"><i>❌</i>Close</button>
-        </div>
-        <strong>On this page</strong>
-        <nav id="TableOfContents">
-  <ul>
-    <li><a href="#database-design">Database Design</a></li>
-    <li><a href="#development-database">Development Database</a></li>
-    <li><a href="#migrate-app"><code>migrate</code> app</a>
-      <ul>
-        <li><a href="#1-the-migrations-folder">1. The <code>migrations</code> folder</a></li>
-        <li><a href="#2-download-and-install-the-packages-and-dependencies">2. Download and install the packages and dependencies</a></li>
-        <li><a href="#3-cmdmigratemaingo">3. <code>cmd/migrate/main.go</code></a></li>
-        <li><a href="#4-run-go-mod-tidy">4. Run <code>go mod tidy</code></a></li>
-        <li><a href="#5-update-dockerfile">5. Update <code>Dockerfile</code></a></li>
-      </ul>
-    </li>
-    <li><a href="#migrate-commands"><code>migrate</code> commands</a>
-      <ul>
-        <li><a href="#migrate--h"><code>migrate -h</code></a></li>
-        <li><a href="#migrate-version"><code>migrate version</code></a></li>
-        <li><a href="#migrate-status"><code>migrate status</code></a></li>
-        <li><a href="#migrate-create"><code>migrate create</code></a></li>
-        <li><a href="#migrate-fix"><code>migrate fix</code></a></li>
-        <li><a href="#other-commands">Other commands</a></li>
-      </ul>
-    </li>
-    <li><a href="#sql-migrations">SQL migrations</a></li>
-    <li><a href="#running-migrations">Running migrations</a>
-      <ul>
-        <li><a href="#migrate-up"><code>migrate up</code></a></li>
-        <li><a href="#migrate-down"><code>migrate down</code></a></li>
-      </ul>
-    </li>
-    <li><a href="#-final-project-structure">📁 Final project structure</a></li>
-    <li><a href="#-whats-next">👨‍🏫 What&rsquo;s next…</a></li>
-  </ul>
-</nav>
-      </aside>
-    </main>
-
-    <footer>
-      <div><i>🧑‍💻</i>Built by and copyright<a href="https://github.com/dumindu" target="_blank">Dumindu Madunuwan</a><i>📅</i> 2019-2024<i>🚀</i> <a href="https://github.com/learning-cloud-native-go" target="_blank">GitHub</a></div>
-      <div>
-        <button class="btn"><i>☀️</i><i>⁄</i><i>🌑</i></button>
-      </div>
-    </footer>
-  </div>
-
-</div>
-
-<div id="body-model-outer"></div>
-<script type="text/javascript" src="/assets/js/docs.min.12ffdc25c0149ef34e761ee54587f2aae17affcb8375298ad2180851930cb142.js" integrity=""></script>
-</body>
-</html>
+</code></pre><h3 id=migrate-version><code>migrate version</code></h3><p>Database migrations are like version controls for the database. When you run <code>go run ./cmd/migrate version</code>, you should see the timestamp of your current time and <code>goose: version 0</code> text. If you checked the <code>myapp_db</code> database, you should see the new table <code>goose_db_version</code> with a <code>version_id: 0</code> record.</p><h3 id=migrate-status><code>migrate status</code></h3><p>With <code>go run ./cmd/migrate status</code>, we can see more detailed list of migrations. But, because we haven&rsquo;t added any migrations so far, it will be an empty list with the current timestamp and headings.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>2019/08/05 09:00:00     Applied At                  Migration
+</span></span><span class=line><span class=cl>2019/08/05 09:00:00     <span class=o>=======================================</span>
+</span></span></code></pre></div><h3 id=migrate-create><code>migrate create</code></h3><p>Let&rsquo;s create our first migration file by running <code>go run ./cmd/migrate create create_books_table sql</code>. This will create the <code>create_books_table.sql</code> file with the prefix of current timestamp (ex. <code>20190805170000_create_books_table.sql</code>) inside the <code>migrations</code> folder with the following content.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sql data-lang=sql><span class=line><span class=cl><span class=c1>-- +goose Up
+</span></span></span><span class=line><span class=cl><span class=c1>-- +goose StatementBegin
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>SELECT</span><span class=w> </span><span class=s1>&#39;up SQL query&#39;</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>-- +goose StatementEnd
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>-- +goose Down
+</span></span></span><span class=line><span class=cl><span class=c1>-- +goose StatementBegin
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>SELECT</span><span class=w> </span><span class=s1>&#39;down SQL query&#39;</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>-- +goose StatementEnd
+</span></span></span></code></pre></div><h3 id=migrate-fix><code>migrate fix</code></h3><p>We can keep migration files/ version numbers either in timestamps or simpler numeric values like 1, 2, 3, etc. By running
+<code>go run ./cmd/migrate fix</code>, our first migration file will be renamed to <code>00001_create_books_table.sql</code>.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sql data-lang=sql><span class=line><span class=cl><span class=n>RENAMED</span><span class=w> </span><span class=mi>20190805170000</span><span class=n>_create_books_table</span><span class=p>.</span><span class=k>sql</span><span class=w> </span><span class=o>=&gt;</span><span class=w> </span><span class=mi>00001</span><span class=n>_create_books_table</span><span class=p>.</span><span class=k>sql</span><span class=w>
+</span></span></span></code></pre></div><h3 id=other-commands>Other commands</h3><blockquote><p>💡We will discuss the remaining commands like <code>migrate up</code>, <code>migrate down</code>, <code>migrate reset</code>, after update our migration file with actual SQL.</p></blockquote><h2 id=sql-migrations>SQL migrations</h2><p>Let&rsquo;s update our <code>00001_create_books_table.sql</code> file with the actual SQL. In the <code>+goose Up</code> section, we should add the <code>CREATE TABLE</code> script and in the <code>+goose Down</code> section, we should add the <code>DROP TABLE</code> script.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sql data-lang=sql><span class=line><span class=cl><span class=c1>-- +goose Up
+</span></span></span><span class=line><span class=cl><span class=c1>-- SQL in this section is executed when the migration is applied.
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>CREATE</span><span class=w> </span><span class=k>TABLE</span><span class=w> </span><span class=k>IF</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=k>EXISTS</span><span class=w> </span><span class=n>books</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>(</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>id</span><span class=w>             </span><span class=n>UUID</span><span class=w> </span><span class=k>PRIMARY</span><span class=w> </span><span class=k>KEY</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>title</span><span class=w>          </span><span class=nb>TEXT</span><span class=w>      </span><span class=k>NOT</span><span class=w> </span><span class=k>NULL</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>author</span><span class=w>         </span><span class=nb>TEXT</span><span class=w>      </span><span class=k>NOT</span><span class=w> </span><span class=k>NULL</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>published_date</span><span class=w> </span><span class=nb>DATE</span><span class=w>      </span><span class=k>NOT</span><span class=w> </span><span class=k>NULL</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>image_url</span><span class=w>      </span><span class=nb>TEXT</span><span class=w>      </span><span class=k>NULL</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>description</span><span class=w>    </span><span class=nb>TEXT</span><span class=w>      </span><span class=k>NULL</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>created_at</span><span class=w>     </span><span class=k>TIMESTAMP</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=k>NULL</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>updated_at</span><span class=w>     </span><span class=k>TIMESTAMP</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=k>NULL</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>deleted_at</span><span class=w>     </span><span class=k>TIMESTAMP</span><span class=w> </span><span class=k>NULL</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>-- +goose Down
+</span></span></span><span class=line><span class=cl><span class=c1>-- SQL in this section is executed when the migration is rolled back.
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>DROP</span><span class=w> </span><span class=k>TABLE</span><span class=w> </span><span class=k>IF</span><span class=w> </span><span class=k>EXISTS</span><span class=w> </span><span class=n>books</span><span class=p>;</span><span class=w>
+</span></span></span></code></pre></div><p>With the newly added SQL migration, when you run <code>go run ./cmd/migrate status</code>, you should see the <code>Pending</code> migration now.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>2019/08/05 17:00:00     Applied At                  Migration
+</span></span><span class=line><span class=cl>2019/08/05 17:00:00     <span class=o>=======================================</span>
+</span></span><span class=line><span class=cl>2019/08/05 17:00:00     Pending                  -- 00001_create_books_table.sql
+</span></span></code></pre></div><h2 id=running-migrations>Running migrations</h2><h3 id=migrate-up><code>migrate up</code></h3><p>To apply our migration, let&rsquo;s run <code>go run ./cmd/migrate up</code>. Now, you should see new table <code>books</code> and new record on <code>goose_db_version</code> with id: 2 and <code>version_id</code> : 1.</p><p>Also, with <code>go run ./cmd/migrate status</code>, now you should the details of the applied migration.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>2019/08/05 17:00:00     Applied At                  Migration
+</span></span><span class=line><span class=cl>2019/08/05 17:00:00     <span class=o>=======================================</span>
+</span></span><span class=line><span class=cl>2019/08/05 17:00:00     Mon Aug  <span class=m>5</span> 17:00:00 <span class=m>2019</span> -- 00001_create_books_table.sql
+</span></span></code></pre></div><blockquote><p>💡As you can see with the <code>go run ./cmd/migrate -h</code>,</p><ul><li><code>migrate up-by-one</code> Migrate the DB up by 1</li><li><code>migrate up-to VERSION</code> Migrate the DB to a specific VERSION</li></ul></blockquote><h3 id=migrate-down><code>migrate down</code></h3><p>If you run, <code>go run ./cmd/migrate down</code>, the last migration will be rolled back and you will see the <code>Pending</code> migration with the <code>migrate status</code> command.</p><blockquote><p>💡As you can see with the <code>go run ./cmd/migrate -h</code>,</p><ul><li><code>migrate down</code> Roll back the version by 1</li><li><code>migrate down-to VERSION</code> Roll back to a specific VERSION</li><li><code>migrate redo</code> Re-run the latest migration</li><li><code>migrate reset</code> Roll back all migrations</li></ul></blockquote><h2 id=-final-project-structure>📁 Final project structure</h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>myapp
+</span></span><span class=line><span class=cl>├── cmd
+</span></span><span class=line><span class=cl>│  ├── api
+</span></span><span class=line><span class=cl>│  │  └── main.go
+</span></span><span class=line><span class=cl>│  └── migrate
+</span></span><span class=line><span class=cl>│     └── main.go
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── migrations
+</span></span><span class=line><span class=cl>│  └── 00001_create_books_table.sql
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── go.mod
+</span></span><span class=line><span class=cl>├── go.sum
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── docker-compose.yml
+</span></span><span class=line><span class=cl>└── Dockerfile
+</span></span></code></pre></div><h2 id=-whats-next>👨‍🏫 What&rsquo;s next…</h2><p>In the next article, we&rsquo;ll configure our application and run database migrations on application start.</p></div><footer><time datetime=2024-01-21><i>🕒</i> Updated: 2024-01-21</time>
+<a href=https://learning-cloud-native-go.github.io/docs/hello-world-server/><i>﹤</i> Previous</a>
+<a href=https://learning-cloud-native-go.github.io/docs/configurations/>Next <i>﹥</i></a></footer></article><aside><div><button class=btn><i>❌</i>Close</button></div><strong>On this page</strong><nav id=TableOfContents><ul><li><a href=#database-design>Database Design</a></li><li><a href=#development-database>Development Database</a></li><li><a href=#migrate-app><code>migrate</code> app</a><ul><li><a href=#1-the-migrations-folder>1. The <code>migrations</code> folder</a></li><li><a href=#2-download-and-install-the-packages-and-dependencies>2. Download and install the packages and dependencies</a></li><li><a href=#3-cmdmigratemaingo>3. <code>cmd/migrate/main.go</code></a></li><li><a href=#4-run-go-mod-tidy>4. Run <code>go mod tidy</code></a></li><li><a href=#5-update-dockerfile>5. Update <code>Dockerfile</code></a></li></ul></li><li><a href=#migrate-commands><code>migrate</code> commands</a><ul><li><a href=#migrate--h><code>migrate -h</code></a></li><li><a href=#migrate-version><code>migrate version</code></a></li><li><a href=#migrate-status><code>migrate status</code></a></li><li><a href=#migrate-create><code>migrate create</code></a></li><li><a href=#migrate-fix><code>migrate fix</code></a></li><li><a href=#other-commands>Other commands</a></li></ul></li><li><a href=#sql-migrations>SQL migrations</a></li><li><a href=#running-migrations>Running migrations</a><ul><li><a href=#migrate-up><code>migrate up</code></a></li><li><a href=#migrate-down><code>migrate down</code></a></li></ul></li><li><a href=#-final-project-structure>📁 Final project structure</a></li><li><a href=#-whats-next>👨‍🏫 What&rsquo;s next…</a></li></ul></nav></aside></main><footer><div><i>🧑‍💻</i>Built by and copyright<a href=https://github.com/dumindu target=_blank>Dumindu Madunuwan</a><i>📅</i> 2019-2024<i>🚀</i> <a href=https://github.com/learning-cloud-native-go target=_blank>GitHub</a></div><div><button class=btn><i>☀️</i><i>⁄</i><i>🌑</i></button></div></footer></div></div><div id=body-model-outer></div><script type=text/javascript src=/assets/js/docs.min.12ffdc25c0149ef34e761ee54587f2aae17affcb8375298ad2180851930cb142.js integrity></script></body></html>

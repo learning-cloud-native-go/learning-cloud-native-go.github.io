@@ -1,792 +1,417 @@
-<!DOCTYPE html>
-<html lang="en-US">
-
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Cloud Native Go Tutorials for Everyone!">
-  <meta name="author" content="Dumindu Madunuwan">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#101010" media="(prefers-color-scheme: dark)">
-  
-
-  <title>Error handling · Learning Cloud Native Go</title>
-  <link rel="canonical" href="https://learning-cloud-native-go.github.io/docs/error-handling/">
-  <link rel="stylesheet" href="/assets/css/docs.min.a6d52fd5461b892ef08a611a76391f8b999c6aca8f2a2317d6827c1143c0ca03.css" integrity="">
-
-  <link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/favicon/favicon.ico">
-<link rel="icon" href="/favicon/favicon-16x16.png" sizes="16x16" type="image/png">
-<link rel="icon" href="/favicon/favicon-32x32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" sizes="180x180">
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-H3GD0XFJ42"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-H3GD0XFJ42');
-</script>
-</head>
-
-<body>
-
-<div id="outer-wrapper">
-
-  <div id="aside-wrapper">
-    <aside>
-      <div>
-        <button class="btn"><i>❌</i>Close</button>
-      </div>
-      <a href="/" class="site-logo">Learning Cloud Native Go</a>
-
-      <nav role="navigation">
-        <details open>
-          <summary>Documentation</summary>
-          <ul><li>
-              
-                
-                <a class="" href="/docs/overview/">
-                  
-                  Overview
-                  
-                </a>
-              
-            </li>
-
-          </ul>
-        </details><details open>
-          <summary>Building a Dockerized RESTful API</summary>
-          <ul><li>
-              
-                
-                <a class="" href="/docs/building-a-dockerized-restful-api-application-in-go/">
-                  
-                  Overview
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/hello-world-server/">
-                  
-                  Hello World server
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/database-and-migrations/">
-                  
-                  Database and migrations
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/configurations/">
-                  
-                  Configurations
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/routes-and-openapi-specification/">
-                  
-                  Routes and OpenAPI specification
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="" href="/docs/repository/">
-                  
-                  Repository
-                  
-                </a>
-              
-            </li><li>
-              
-                
-                <a class="active" href="/docs/error-handling/">
-                  
-                  Error handling
-                  
-                </a>
-              
-            </li>
-
-          </ul>
-        </details>
-      </nav>
-    </aside>
-  </div>
-
-  <div id="content-wrapper">
-    <header>
-      <a href="/" class="site-logo">Learning Cloud Native Go</a>
-    </header>
-
-    <main>
-      <article>
-        <nav>
-          <button class="btn"><i>⬅️</i> On this section</button>
-          <button class="btn">On this page <i>➡️</i></button>
-        </nav>
-        <header>
-          <h1>Error handling</h1>
-          <p></p>
-        </header>
-        <div id="article-body">
-          <blockquote class="info"><p><strong>👨‍🏫</strong> <strong>Before we start&hellip;</strong></p>
-<ul>
-<li>Go <code>error</code> values usually provide a more detailed context about what actually went wrong. However, returning the actual error messages to end user mostly cause confusion and make the system vulnerable to security threats. So, when an error occurs, we will send a custom but meaningful error message to the end-user.</li>
-<li>We choose the <a href="https://github.com/go-playground/validator/"><code>go-playground/validator</code></a> for form validations, as it supports struct level validations, extensive validation rules, customizable error handling, etc.</li>
-</ul>
-</blockquote>
-<h2 id="adding-error-messages-to-the-api">Adding error messages to the API</h2>
-<h3 id="1-identify-and-standardize-errors">1. Identify and standardize errors</h3>
-<p>While an error occurs, returning the actual error details to the end-user could result in a poor user/ developer experience and could potentially expose sensitive information and posing a security risk. Let&rsquo;s identify the error cases and standardize our error messages.</p>
-<table>
-<thead>
-<tr>
-<th>Errors can be occurred</th>
-<th>HTTP code</th>
-<th>Custom error for response</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>While inserting data into the database</td>
-<td>500</td>
-<td><code>db data insert failure</code></td>
-</tr>
-<tr>
-<td>While accessing data from the database</td>
-<td>500</td>
-<td><code>db data access failure</code></td>
-</tr>
-<tr>
-<td>While updating data in the database</td>
-<td>500</td>
-<td><code>db data update failure</code></td>
-</tr>
-<tr>
-<td>While removing data in the database</td>
-<td>500</td>
-<td><code>db data remove failure</code></td>
-</tr>
-<tr>
-<td>While encoding json to generate the response</td>
-<td>500</td>
-<td><code>json encode failure</code></td>
-</tr>
-<tr>
-<td>While decoding json to read data from create/ update forms</td>
-<td>500</td>
-<td><code>json decode failure</code></td>
-</tr>
-<tr>
-<td>While decoding book ID from URL parameters as a valid UUID</td>
-<td>400</td>
-<td><code>invalid url param - id</code></td>
-</tr>
-<tr>
-<td>While validating forms</td>
-<td>422</td>
-<td>*<em>array of error messages</em></td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p>👨‍🏫 In the next article, we&rsquo;ll add structured logging capabilities and log the actual error for debugging and auditing purposes.</p>
-</blockquote>
-<h3 id="2-define-helper-functions">2. Define helper functions</h3>
-<p>Let&rsquo;s add the above error messages to <code>api/resource/common/err/err.go</code> with helper functions.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">var</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">RespDBDataInsertFailure</span> <span class="p">=</span> <span class="p">[]</span><span class="nb">byte</span><span class="p">(</span><span class="s">`{&#34;error&#34;: &#34;db data insert failure&#34;}`</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">RespDBDataAccessFailure</span> <span class="p">=</span> <span class="p">[]</span><span class="nb">byte</span><span class="p">(</span><span class="s">`{&#34;error&#34;: &#34;db data access failure&#34;}`</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">RespDBDataUpdateFailure</span> <span class="p">=</span> <span class="p">[]</span><span class="nb">byte</span><span class="p">(</span><span class="s">`{&#34;error&#34;: &#34;db data update failure&#34;}`</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">RespDBDataRemoveFailure</span> <span class="p">=</span> <span class="p">[]</span><span class="nb">byte</span><span class="p">(</span><span class="s">`{&#34;error&#34;: &#34;db data remove failure&#34;}`</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">RespJSONEncodeFailure</span> <span class="p">=</span> <span class="p">[]</span><span class="nb">byte</span><span class="p">(</span><span class="s">`{&#34;error&#34;: &#34;json encode failure&#34;}`</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">RespJSONDecodeFailure</span> <span class="p">=</span> <span class="p">[]</span><span class="nb">byte</span><span class="p">(</span><span class="s">`{&#34;error&#34;: &#34;json decode failure&#34;}`</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">RespInvalidURLParamID</span> <span class="p">=</span> <span class="p">[]</span><span class="nb">byte</span><span class="p">(</span><span class="s">`{&#34;error&#34;: &#34;invalid url param-id&#34;}`</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">reps</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusInternalServerError</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="nx">reps</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">BadRequest</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">reps</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusBadRequest</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="nx">reps</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">ValidationErrors</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">reps</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusUnprocessableEntity</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">w</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="nx">reps</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><h3 id="3-update-api-handlers">3. Update API handlers</h3>
-<p>Let&rsquo;s update the handlers in <code>api/resource/book/handler.go</code>.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">e</span> <span class="s">&#34;myapp/api/resource/common/err&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="o">*</span><span class="nx">API</span><span class="p">)</span> <span class="nf">List</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">books</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">repository</span><span class="p">.</span><span class="nf">List</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespDBDataAccessFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">books</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprint</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;[]&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">NewEncoder</span><span class="p">(</span><span class="nx">w</span><span class="p">).</span><span class="nf">Encode</span><span class="p">(</span><span class="nx">books</span><span class="p">.</span><span class="nf">ToDto</span><span class="p">());</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespJSONEncodeFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="o">*</span><span class="nx">API</span><span class="p">)</span> <span class="nf">Create</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">form</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">Form</span><span class="p">{}</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">NewDecoder</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">Body</span><span class="p">).</span><span class="nf">Decode</span><span class="p">(</span><span class="nx">form</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespJSONDecodeFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">newBook</span> <span class="o">:=</span> <span class="nx">form</span><span class="p">.</span><span class="nf">ToModel</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">newBook</span><span class="p">.</span><span class="nx">ID</span> <span class="p">=</span> <span class="nx">uuid</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">repository</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="nx">newBook</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespDBDataInsertFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusCreated</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="o">*</span><span class="nx">API</span><span class="p">)</span> <span class="nf">Read</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">uuid</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="nx">chi</span><span class="p">.</span><span class="nf">URLParam</span><span class="p">(</span><span class="nx">r</span><span class="p">,</span> <span class="s">&#34;id&#34;</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">BadRequest</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespInvalidURLParamID</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">book</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">repository</span><span class="p">.</span><span class="nf">Read</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">err</span> <span class="o">==</span> <span class="nx">gorm</span><span class="p">.</span><span class="nx">ErrRecordNotFound</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusNotFound</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">			<span class="k">return</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespDBDataAccessFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">dto</span> <span class="o">:=</span> <span class="nx">book</span><span class="p">.</span><span class="nf">ToDto</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">NewEncoder</span><span class="p">(</span><span class="nx">w</span><span class="p">).</span><span class="nf">Encode</span><span class="p">(</span><span class="nx">dto</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespJSONEncodeFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="o">*</span><span class="nx">API</span><span class="p">)</span> <span class="nf">Update</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">uuid</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="nx">chi</span><span class="p">.</span><span class="nf">URLParam</span><span class="p">(</span><span class="nx">r</span><span class="p">,</span> <span class="s">&#34;id&#34;</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">BadRequest</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespInvalidURLParamID</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">form</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">Form</span><span class="p">{}</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">NewDecoder</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">Body</span><span class="p">).</span><span class="nf">Decode</span><span class="p">(</span><span class="nx">form</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespJSONDecodeFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">book</span> <span class="o">:=</span> <span class="nx">form</span><span class="p">.</span><span class="nf">ToModel</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">book</span><span class="p">.</span><span class="nx">ID</span> <span class="p">=</span> <span class="nx">id</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">rows</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">repository</span><span class="p">.</span><span class="nf">Update</span><span class="p">(</span><span class="nx">book</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespDBDataUpdateFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">rows</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusNotFound</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="o">*</span><span class="nx">API</span><span class="p">)</span> <span class="nf">Delete</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">uuid</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="nx">chi</span><span class="p">.</span><span class="nf">URLParam</span><span class="p">(</span><span class="nx">r</span><span class="p">,</span> <span class="s">&#34;id&#34;</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">BadRequest</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespInvalidURLParamID</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">rows</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">repository</span><span class="p">.</span><span class="nf">Delete</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">BadRequest</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespDBDataRemoveFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">rows</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusNotFound</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p>With this, our custom error messages should appear while an error occurs.</p>
-<h2 id="adding-validator-to-the-api">Adding validator to the API</h2>
-<p>In here, we add <code>go-playground/validator</code>, set struct level validations to the create/ update book form, add custom validator with own custom validation rule <code>alphaspace</code> and add it to the API.</p>
-<h3 id="1-add-go-playgroundvalidator">1. Add <code>go-playground/validator</code></h3>
-<pre tabindex="0"><code>go get github.com/go-playground/validator/v10
-</code></pre><h3 id="2-set-validation-tags">2. Set validation tags</h3>
-<p>In here, we use their built-in <code>required</code>, <code>datetime</code>, <code>max</code>, <code>url</code> validate tags and our own custom <code>alphaspace</code> validation. Let&rsquo;s update the form in <code>api/resource/book/model.go</code></p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">Form</span> <span class="kd">struct</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">Title</span>         <span class="kt">string</span> <span class="s">`json:&#34;title&#34; validate:&#34;required,max=255&#34;`</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">Author</span>        <span class="kt">string</span> <span class="s">`json:&#34;author&#34; validate:&#34;required,alphaspace,max=255&#34;`</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">PublishedDate</span> <span class="kt">string</span> <span class="s">`json:&#34;published_date&#34; validate:&#34;required,datetime=2006-01-02&#34;`</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">ImageURL</span>      <span class="kt">string</span> <span class="s">`json:&#34;image_url&#34; validate:&#34;url&#34;`</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">Description</span>   <span class="kt">string</span> <span class="s">`json:&#34;description&#34;`</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p>🔍 On the <a href="https://github.com/go-playground/validator/?tab=readme-ov-file#baked-in-validations"><code>go-playground/validator</code> README</a> file, you can see the built-in validation rules they provide.</p>
-<h3 id="3-add-utilvalidatorvalidatorgo">3. Add <code>util/validator/validator.go</code></h3>
-<p>We combine their <a href="https://github.com/go-playground/validator/blob/master/_examples/struct-level/main.go">struct-level</a> and <a href="https://github.com/go-playground/validator/blob/master/_examples/custom-validation/main.go">custom validation</a> example implementations.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">validator</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;reflect&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;regexp&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;strings&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/go-playground/validator/v10&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">const</span> <span class="nx">alphaSpaceRegexString</span> <span class="kt">string</span> <span class="p">=</span> <span class="s">&#34;^[a-zA-Z ]+$&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">New</span><span class="p">()</span> <span class="o">*</span><span class="nx">validator</span><span class="p">.</span><span class="nx">Validate</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">validate</span> <span class="o">:=</span> <span class="nx">validator</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">validate</span><span class="p">.</span><span class="nf">RegisterTagNameFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">fld</span> <span class="nx">reflect</span><span class="p">.</span><span class="nx">StructField</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">name</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">SplitN</span><span class="p">(</span><span class="nx">fld</span><span class="p">.</span><span class="nx">Tag</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;json&#34;</span><span class="p">),</span> <span class="s">&#34;,&#34;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">name</span> <span class="o">==</span> <span class="s">&#34;-&#34;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="s">&#34;&#34;</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="nx">name</span>
-</span></span><span class="line"><span class="cl">	<span class="p">})</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">validate</span><span class="p">.</span><span class="nf">RegisterValidation</span><span class="p">(</span><span class="s">&#34;alphaspace&#34;</span><span class="p">,</span> <span class="nx">isAlphaSpace</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">validate</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">isAlphaSpace</span><span class="p">(</span><span class="nx">fl</span> <span class="nx">validator</span><span class="p">.</span><span class="nx">FieldLevel</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">reg</span> <span class="o">:=</span> <span class="nx">regexp</span><span class="p">.</span><span class="nf">MustCompile</span><span class="p">(</span><span class="nx">alphaSpaceRegexString</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">reg</span><span class="p">.</span><span class="nf">MatchString</span><span class="p">(</span><span class="nx">fl</span><span class="p">.</span><span class="nf">Field</span><span class="p">().</span><span class="nf">String</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p><code>RegisterTagNameFunc</code> helps to set the error message form field name according to the <code>json</code> tag, instead of using capitalized struct field name. <code>isAlphaSpace</code> is the custom validation rule to validate the fields with only alphabetic characters and spaces.</p>
-<h3 id="4-add-validator-as-an-api-dependency">4. Add validator as an API dependency</h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">import</span> <span class="s">&#34;github.com/go-playground/validator/v10&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">API</span> <span class="kd">struct</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">repository</span> <span class="o">*</span><span class="nx">Repository</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">validator</span>  <span class="o">*</span><span class="nx">validator</span><span class="p">.</span><span class="nx">Validate</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">New</span><span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span><span class="p">,</span> <span class="nx">v</span> <span class="o">*</span><span class="nx">validator</span><span class="p">.</span><span class="nx">Validate</span><span class="p">)</span> <span class="o">*</span><span class="nx">API</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">API</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">repository</span><span class="p">:</span> <span class="nf">NewRepository</span><span class="p">(</span><span class="nx">db</span><span class="p">),</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">validator</span><span class="p">:</span>  <span class="nx">v</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><h3 id="5-update-router">5. Update router</h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">import</span> <span class="s">&#34;github.com/go-playground/validator/v10&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">New</span><span class="p">(</span><span class="nx">db</span> <span class="o">*</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">DB</span><span class="p">,</span> <span class="nx">v</span> <span class="o">*</span><span class="nx">validator</span><span class="p">.</span><span class="nx">Validate</span><span class="p">)</span> <span class="o">*</span><span class="nx">chi</span><span class="p">.</span><span class="nx">Mux</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">r</span> <span class="o">:=</span> <span class="nx">chi</span><span class="p">.</span><span class="nf">NewRouter</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">r</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;/livez&#34;</span><span class="p">,</span> <span class="nx">health</span><span class="p">.</span><span class="nx">Read</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">r</span><span class="p">.</span><span class="nf">Route</span><span class="p">(</span><span class="s">&#34;/v1&#34;</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">r</span> <span class="nx">chi</span><span class="p">.</span><span class="nx">Router</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">bookAPI</span> <span class="o">:=</span> <span class="nx">book</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="nx">v</span><span class="p">)</span>
-</span></span></code></pre></div><h3 id="6-update-cmdapimaingo">6. Update <code>cmd/api/main.go</code></h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nx">validatorUil</span> <span class="s">&#34;myapp/util/validator&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">c</span> <span class="o">:=</span> <span class="nx">config</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">v</span> <span class="o">:=</span> <span class="nx">validatorUil</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="kd">var</span> <span class="nx">logLevel</span> <span class="nx">gormlogger</span><span class="p">.</span><span class="nx">LogLevel</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">c</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nx">Debug</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">logLevel</span> <span class="p">=</span> <span class="nx">gormlogger</span><span class="p">.</span><span class="nx">Info</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">logLevel</span> <span class="p">=</span> <span class="nx">gormlogger</span><span class="p">.</span><span class="nx">Error</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">dbString</span> <span class="o">:=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="nx">fmtDBString</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nx">Host</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nx">Username</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nx">Password</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nx">DBName</span><span class="p">,</span> <span class="nx">c</span><span class="p">.</span><span class="nx">DB</span><span class="p">.</span><span class="nx">Port</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">db</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">gorm</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="nx">postgres</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="nx">dbString</span><span class="p">),</span> <span class="o">&amp;</span><span class="nx">gorm</span><span class="p">.</span><span class="nx">Config</span><span class="p">{</span><span class="nx">Logger</span><span class="p">:</span> <span class="nx">gormlogger</span><span class="p">.</span><span class="nx">Default</span><span class="p">.</span><span class="nf">LogMode</span><span class="p">(</span><span class="nx">logLevel</span><span class="p">)})</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="s">&#34;DB connection start failure&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">r</span> <span class="o">:=</span> <span class="nx">router</span><span class="p">.</span><span class="nf">New</span><span class="p">(</span><span class="nx">db</span><span class="p">,</span> <span class="nx">v</span><span class="p">)</span>
-</span></span></code></pre></div><h3 id="7--run-go-mod-tidy">7.  Run <code>go mod tidy</code></h3>
-<p>When we add a new package and use it, we have to run <code>go mod tidy</code> to reorganize the dependencies in the <code>go.mod</code> file.</p>
-<h2 id="using-validator-from-handlers">Using validator from handlers</h2>
-<p>Let&rsquo;s check the error of <a href="https://pkg.go.dev/github.com/go-playground/validator/v10#Validate.Struct"><code>validator.Validate</code> <code>Struct()</code></a> via the <code>API.validator.Struct()</code></p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="o">*</span><span class="nx">API</span><span class="p">)</span> <span class="nf">Create</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">form</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">Form</span><span class="p">{}</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">NewDecoder</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">Body</span><span class="p">).</span><span class="nf">Decode</span><span class="p">(</span><span class="nx">form</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespJSONDecodeFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">validator</span><span class="p">.</span><span class="nf">Struct</span><span class="p">(</span><span class="nx">form</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">newBook</span> <span class="o">:=</span> <span class="nx">form</span><span class="p">.</span><span class="nf">ToModel</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">newBook</span><span class="p">.</span><span class="nx">ID</span> <span class="p">=</span> <span class="nx">uuid</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">repository</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="nx">newBook</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespDBDataInsertFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusCreated</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p>It returns an array of <a href="https://pkg.go.dev/github.com/go-playground/validator/v10#FieldError">FieldError&rsquo;s</a>.</p>
-<pre tabindex="0"><code>Key: &#39;Form.title&#39; Error:Field validation for &#39;title&#39; failed on the &#39;required&#39; tag
+<!doctype html><html lang=en-US><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="Cloud Native Go Tutorials for Everyone!"><meta name=author content="Dumindu Madunuwan"><meta name=theme-color content="#ffffff" media="(prefers-color-scheme: light)"><meta name=theme-color content="#101010" media="(prefers-color-scheme: dark)"><title>Error handling · Learning Cloud Native Go</title>
+<link rel=canonical href=https://learning-cloud-native-go.github.io/docs/error-handling/><link rel=stylesheet href=/assets/css/docs.min.8e9408609771a441499aa5571a4585b0ca95783b842d5c758af5eef1457b0fe0.css integrity><link rel=manifest href=/manifest.json><link rel=icon href=/favicon/favicon.ico><link rel=icon href=/favicon/favicon-16x16.png sizes=16x16 type=image/png><link rel=icon href=/favicon/favicon-32x32.png sizes=32x32 type=image/png><link rel=apple-touch-icon href=/favicon/apple-touch-icon.png sizes=180x180><script async src="https://www.googletagmanager.com/gtag/js?id=G-H3GD0XFJ42"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-H3GD0XFJ42")</script></head><body><div id=outer-wrapper><div id=aside-wrapper><aside><div><button class=btn><i>❌</i>Close</button></div><a href=https://learning-cloud-native-go.github.io/ class=site-logo>Learning Cloud Native Go</a><nav role=navigation><details open><summary>Documentation</summary><ul><li><a href=https://learning-cloud-native-go.github.io/docs/overview/>Overview</a></li></ul></details><details open><summary>Building a Dockerized RESTful API</summary><ul><li><a href=https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application-in-go/>Building a Dockerized RESTful API application in Go</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/hello-world-server/>Hello World server</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/database-and-migrations/>Database and migrations</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/configurations/>Configurations</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/routes-and-openapi-specification/>Routes and OpenAPI specification</a></li><li><a href=https://learning-cloud-native-go.github.io/docs/repository/>Repository</a></li><li><a class=active href=https://learning-cloud-native-go.github.io/docs/error-handling/>Error handling</a></li></ul></details></nav></aside></div><div id=content-wrapper><header><a href=https://learning-cloud-native-go.github.io/ class=site-logo>Learning Cloud Native Go</a></header><main><article><nav><button class=btn><i>⬅️</i> On this section</button>
+<button class=btn>On this page <i>➡️</i></button></nav><header><h1>Error handling</h1><p></p></header><div id=article-body><blockquote class=info><p><strong>👨‍🏫</strong> <strong>Before we start&mldr;</strong></p><ul><li>Go <code>error</code> values usually provide a more detailed context about what actually went wrong. However, returning the actual error messages to end user mostly cause confusion and make the system vulnerable to security threats. So, when an error occurs, we will send a custom but meaningful error message to the end-user.</li><li>We choose the <a href=https://github.com/go-playground/validator/ target=_blank><code>go-playground/validator</code></a> for form validations, as it supports struct level validations, extensive validation rules, customizable error handling, etc.</li></ul></blockquote><h2 id=adding-error-messages-to-the-api>Adding error messages to the API</h2><h3 id=1-identify-and-standardize-errors>1. Identify and standardize errors</h3><p>While an error occurs, returning the actual error details to the end-user could result in a poor user/ developer experience and could potentially expose sensitive information and posing a security risk. Let&rsquo;s identify the error cases and standardize our error messages.</p><table><thead><tr><th>Errors can be occurred</th><th>HTTP code</th><th>Custom error for response</th></tr></thead><tbody><tr><td>While inserting data into the database</td><td>500</td><td><code>db data insert failure</code></td></tr><tr><td>While accessing data from the database</td><td>500</td><td><code>db data access failure</code></td></tr><tr><td>While updating data in the database</td><td>500</td><td><code>db data update failure</code></td></tr><tr><td>While removing data in the database</td><td>500</td><td><code>db data remove failure</code></td></tr><tr><td>While encoding json to generate the response</td><td>500</td><td><code>json encode failure</code></td></tr><tr><td>While decoding json to read data from create/ update forms</td><td>500</td><td><code>json decode failure</code></td></tr><tr><td>While decoding book ID from URL parameters as a valid UUID</td><td>400</td><td><code>invalid url param - id</code></td></tr><tr><td>While validating forms</td><td>422</td><td>*<em>array of error messages</em></td></tr></tbody></table><blockquote><p>👨‍🏫 In the next article, we&rsquo;ll add structured logging capabilities and log the actual error for debugging and auditing purposes.</p></blockquote><h3 id=2-define-helper-functions>2. Define helper functions</h3><p>Let&rsquo;s add the above error messages to <code>api/resource/common/err/err.go</code> with helper functions.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>var</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=nx>RespDBDataInsertFailure</span> <span class=p>=</span> <span class=p>[]</span><span class=nb>byte</span><span class=p>(</span><span class=s>`{&#34;error&#34;: &#34;db data insert failure&#34;}`</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>RespDBDataAccessFailure</span> <span class=p>=</span> <span class=p>[]</span><span class=nb>byte</span><span class=p>(</span><span class=s>`{&#34;error&#34;: &#34;db data access failure&#34;}`</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>RespDBDataUpdateFailure</span> <span class=p>=</span> <span class=p>[]</span><span class=nb>byte</span><span class=p>(</span><span class=s>`{&#34;error&#34;: &#34;db data update failure&#34;}`</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>RespDBDataRemoveFailure</span> <span class=p>=</span> <span class=p>[]</span><span class=nb>byte</span><span class=p>(</span><span class=s>`{&#34;error&#34;: &#34;db data remove failure&#34;}`</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>RespJSONEncodeFailure</span> <span class=p>=</span> <span class=p>[]</span><span class=nb>byte</span><span class=p>(</span><span class=s>`{&#34;error&#34;: &#34;json encode failure&#34;}`</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>RespJSONDecodeFailure</span> <span class=p>=</span> <span class=p>[]</span><span class=nb>byte</span><span class=p>(</span><span class=s>`{&#34;error&#34;: &#34;json decode failure&#34;}`</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>RespInvalidURLParamID</span> <span class=p>=</span> <span class=p>[]</span><span class=nb>byte</span><span class=p>(</span><span class=s>`{&#34;error&#34;: &#34;invalid url param-id&#34;}`</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ResponseWriter</span><span class=p>,</span> <span class=nx>reps</span> <span class=p>[]</span><span class=kt>byte</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusInternalServerError</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>w</span><span class=p>.</span><span class=nf>Write</span><span class=p>(</span><span class=nx>reps</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>BadRequest</span><span class=p>(</span><span class=nx>w</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ResponseWriter</span><span class=p>,</span> <span class=nx>reps</span> <span class=p>[]</span><span class=kt>byte</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusBadRequest</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>w</span><span class=p>.</span><span class=nf>Write</span><span class=p>(</span><span class=nx>reps</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>ValidationErrors</span><span class=p>(</span><span class=nx>w</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ResponseWriter</span><span class=p>,</span> <span class=nx>reps</span> <span class=p>[]</span><span class=kt>byte</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusUnprocessableEntity</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>w</span><span class=p>.</span><span class=nf>Write</span><span class=p>(</span><span class=nx>reps</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><h3 id=3-update-api-handlers>3. Update API handlers</h3><p>Let&rsquo;s update the handlers in <code>api/resource/book/handler.go</code>.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=nx>e</span> <span class=s>&#34;myapp/api/resource/common/err&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=o>*</span><span class=nx>API</span><span class=p>)</span> <span class=nf>List</span><span class=p>(</span><span class=nx>w</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ResponseWriter</span><span class=p>,</span> <span class=nx>r</span> <span class=o>*</span><span class=nx>http</span><span class=p>.</span><span class=nx>Request</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>books</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>a</span><span class=p>.</span><span class=nx>repository</span><span class=p>.</span><span class=nf>List</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespDBDataAccessFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nb>len</span><span class=p>(</span><span class=nx>books</span><span class=p>)</span> <span class=o>==</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>fmt</span><span class=p>.</span><span class=nf>Fprint</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=s>&#34;[]&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>json</span><span class=p>.</span><span class=nf>NewEncoder</span><span class=p>(</span><span class=nx>w</span><span class=p>).</span><span class=nf>Encode</span><span class=p>(</span><span class=nx>books</span><span class=p>.</span><span class=nf>ToDto</span><span class=p>());</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespJSONEncodeFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=o>*</span><span class=nx>API</span><span class=p>)</span> <span class=nf>Create</span><span class=p>(</span><span class=nx>w</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ResponseWriter</span><span class=p>,</span> <span class=nx>r</span> <span class=o>*</span><span class=nx>http</span><span class=p>.</span><span class=nx>Request</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>form</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>Form</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>json</span><span class=p>.</span><span class=nf>NewDecoder</span><span class=p>(</span><span class=nx>r</span><span class=p>.</span><span class=nx>Body</span><span class=p>).</span><span class=nf>Decode</span><span class=p>(</span><span class=nx>form</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespJSONDecodeFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>newBook</span> <span class=o>:=</span> <span class=nx>form</span><span class=p>.</span><span class=nf>ToModel</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>newBook</span><span class=p>.</span><span class=nx>ID</span> <span class=p>=</span> <span class=nx>uuid</span><span class=p>.</span><span class=nf>New</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>_</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>a</span><span class=p>.</span><span class=nx>repository</span><span class=p>.</span><span class=nf>Create</span><span class=p>(</span><span class=nx>newBook</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespDBDataInsertFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusCreated</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=o>*</span><span class=nx>API</span><span class=p>)</span> <span class=nf>Read</span><span class=p>(</span><span class=nx>w</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ResponseWriter</span><span class=p>,</span> <span class=nx>r</span> <span class=o>*</span><span class=nx>http</span><span class=p>.</span><span class=nx>Request</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>id</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>uuid</span><span class=p>.</span><span class=nf>Parse</span><span class=p>(</span><span class=nx>chi</span><span class=p>.</span><span class=nf>URLParam</span><span class=p>(</span><span class=nx>r</span><span class=p>,</span> <span class=s>&#34;id&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>BadRequest</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespInvalidURLParamID</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>book</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>a</span><span class=p>.</span><span class=nx>repository</span><span class=p>.</span><span class=nf>Read</span><span class=p>(</span><span class=nx>id</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=nx>err</span> <span class=o>==</span> <span class=nx>gorm</span><span class=p>.</span><span class=nx>ErrRecordNotFound</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusNotFound</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=k>return</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespDBDataAccessFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>dto</span> <span class=o>:=</span> <span class=nx>book</span><span class=p>.</span><span class=nf>ToDto</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>json</span><span class=p>.</span><span class=nf>NewEncoder</span><span class=p>(</span><span class=nx>w</span><span class=p>).</span><span class=nf>Encode</span><span class=p>(</span><span class=nx>dto</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespJSONEncodeFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=o>*</span><span class=nx>API</span><span class=p>)</span> <span class=nf>Update</span><span class=p>(</span><span class=nx>w</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ResponseWriter</span><span class=p>,</span> <span class=nx>r</span> <span class=o>*</span><span class=nx>http</span><span class=p>.</span><span class=nx>Request</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>id</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>uuid</span><span class=p>.</span><span class=nf>Parse</span><span class=p>(</span><span class=nx>chi</span><span class=p>.</span><span class=nf>URLParam</span><span class=p>(</span><span class=nx>r</span><span class=p>,</span> <span class=s>&#34;id&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>BadRequest</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespInvalidURLParamID</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>form</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>Form</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>json</span><span class=p>.</span><span class=nf>NewDecoder</span><span class=p>(</span><span class=nx>r</span><span class=p>.</span><span class=nx>Body</span><span class=p>).</span><span class=nf>Decode</span><span class=p>(</span><span class=nx>form</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespJSONDecodeFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>book</span> <span class=o>:=</span> <span class=nx>form</span><span class=p>.</span><span class=nf>ToModel</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>book</span><span class=p>.</span><span class=nx>ID</span> <span class=p>=</span> <span class=nx>id</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>rows</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>a</span><span class=p>.</span><span class=nx>repository</span><span class=p>.</span><span class=nf>Update</span><span class=p>(</span><span class=nx>book</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespDBDataUpdateFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>rows</span> <span class=o>==</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusNotFound</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=o>*</span><span class=nx>API</span><span class=p>)</span> <span class=nf>Delete</span><span class=p>(</span><span class=nx>w</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ResponseWriter</span><span class=p>,</span> <span class=nx>r</span> <span class=o>*</span><span class=nx>http</span><span class=p>.</span><span class=nx>Request</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>id</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>uuid</span><span class=p>.</span><span class=nf>Parse</span><span class=p>(</span><span class=nx>chi</span><span class=p>.</span><span class=nf>URLParam</span><span class=p>(</span><span class=nx>r</span><span class=p>,</span> <span class=s>&#34;id&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>BadRequest</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespInvalidURLParamID</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>rows</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>a</span><span class=p>.</span><span class=nx>repository</span><span class=p>.</span><span class=nf>Delete</span><span class=p>(</span><span class=nx>id</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>BadRequest</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespDBDataRemoveFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>rows</span> <span class=o>==</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusNotFound</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>With this, our custom error messages should appear while an error occurs.</p><h2 id=adding-validator-to-the-api>Adding validator to the API</h2><p>In here, we add <code>go-playground/validator</code>, set struct level validations to the create/ update book form, add custom validator with own custom validation rule <code>alphaspace</code> and add it to the API.</p><h3 id=1-add-go-playgroundvalidator>1. Add <code>go-playground/validator</code></h3><pre tabindex=0><code>go get github.com/go-playground/validator/v10
+</code></pre><h3 id=2-set-validation-tags>2. Set validation tags</h3><p>In here, we use their built-in <code>required</code>, <code>datetime</code>, <code>max</code>, <code>url</code> validate tags and our own custom <code>alphaspace</code> validation. Let&rsquo;s update the form in <code>api/resource/book/model.go</code></p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>type</span> <span class=nx>Form</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Title</span>         <span class=kt>string</span> <span class=s>`json:&#34;title&#34; validate:&#34;required,max=255&#34;`</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Author</span>        <span class=kt>string</span> <span class=s>`json:&#34;author&#34; validate:&#34;required,alphaspace,max=255&#34;`</span>
+</span></span><span class=line><span class=cl>	<span class=nx>PublishedDate</span> <span class=kt>string</span> <span class=s>`json:&#34;published_date&#34; validate:&#34;required,datetime=2006-01-02&#34;`</span>
+</span></span><span class=line><span class=cl>	<span class=nx>ImageURL</span>      <span class=kt>string</span> <span class=s>`json:&#34;image_url&#34; validate:&#34;url&#34;`</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Description</span>   <span class=kt>string</span> <span class=s>`json:&#34;description&#34;`</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>🔍 On the <a href="https://github.com/go-playground/validator/?tab=readme-ov-file#baked-in-validations" target=_blank><code>go-playground/validator</code> README</a> file, you can see the built-in validation rules they provide.</p><h3 id=3-add-utilvalidatorvalidatorgo>3. Add <code>util/validator/validator.go</code></h3><p>We combine their <a href=https://github.com/go-playground/validator/blob/master/_examples/struct-level/main.go target=_blank>struct-level</a> and <a href=https://github.com/go-playground/validator/blob/master/_examples/custom-validation/main.go target=_blank>custom validation</a> example implementations.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>validator</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;reflect&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;regexp&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;strings&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;github.com/go-playground/validator/v10&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>const</span> <span class=nx>alphaSpaceRegexString</span> <span class=kt>string</span> <span class=p>=</span> <span class=s>&#34;^[a-zA-Z ]+$&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>New</span><span class=p>()</span> <span class=o>*</span><span class=nx>validator</span><span class=p>.</span><span class=nx>Validate</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>validate</span> <span class=o>:=</span> <span class=nx>validator</span><span class=p>.</span><span class=nf>New</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>validate</span><span class=p>.</span><span class=nf>RegisterTagNameFunc</span><span class=p>(</span><span class=kd>func</span><span class=p>(</span><span class=nx>fld</span> <span class=nx>reflect</span><span class=p>.</span><span class=nx>StructField</span><span class=p>)</span> <span class=kt>string</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>name</span> <span class=o>:=</span> <span class=nx>strings</span><span class=p>.</span><span class=nf>SplitN</span><span class=p>(</span><span class=nx>fld</span><span class=p>.</span><span class=nx>Tag</span><span class=p>.</span><span class=nf>Get</span><span class=p>(</span><span class=s>&#34;json&#34;</span><span class=p>),</span> <span class=s>&#34;,&#34;</span><span class=p>,</span> <span class=mi>2</span><span class=p>)[</span><span class=mi>0</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=nx>name</span> <span class=o>==</span> <span class=s>&#34;-&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=k>return</span> <span class=s>&#34;&#34;</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=nx>name</span>
+</span></span><span class=line><span class=cl>	<span class=p>})</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>validate</span><span class=p>.</span><span class=nf>RegisterValidation</span><span class=p>(</span><span class=s>&#34;alphaspace&#34;</span><span class=p>,</span> <span class=nx>isAlphaSpace</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nx>validate</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>isAlphaSpace</span><span class=p>(</span><span class=nx>fl</span> <span class=nx>validator</span><span class=p>.</span><span class=nx>FieldLevel</span><span class=p>)</span> <span class=kt>bool</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>reg</span> <span class=o>:=</span> <span class=nx>regexp</span><span class=p>.</span><span class=nf>MustCompile</span><span class=p>(</span><span class=nx>alphaSpaceRegexString</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=nx>reg</span><span class=p>.</span><span class=nf>MatchString</span><span class=p>(</span><span class=nx>fl</span><span class=p>.</span><span class=nf>Field</span><span class=p>().</span><span class=nf>String</span><span class=p>())</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p><code>RegisterTagNameFunc</code> helps to set the error message form field name according to the <code>json</code> tag, instead of using capitalized struct field name. <code>isAlphaSpace</code> is the custom validation rule to validate the fields with only alphabetic characters and spaces.</p><h3 id=4-add-validator-as-an-api-dependency>4. Add validator as an API dependency</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;github.com/go-playground/validator/v10&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>API</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>repository</span> <span class=o>*</span><span class=nx>Repository</span>
+</span></span><span class=line><span class=cl>	<span class=nx>validator</span>  <span class=o>*</span><span class=nx>validator</span><span class=p>.</span><span class=nx>Validate</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>New</span><span class=p>(</span><span class=nx>db</span> <span class=o>*</span><span class=nx>gorm</span><span class=p>.</span><span class=nx>DB</span><span class=p>,</span> <span class=nx>v</span> <span class=o>*</span><span class=nx>validator</span><span class=p>.</span><span class=nx>Validate</span><span class=p>)</span> <span class=o>*</span><span class=nx>API</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=o>&amp;</span><span class=nx>API</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>repository</span><span class=p>:</span> <span class=nf>NewRepository</span><span class=p>(</span><span class=nx>db</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>		<span class=nx>validator</span><span class=p>:</span>  <span class=nx>v</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><h3 id=5-update-router>5. Update router</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>import</span> <span class=s>&#34;github.com/go-playground/validator/v10&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>New</span><span class=p>(</span><span class=nx>db</span> <span class=o>*</span><span class=nx>gorm</span><span class=p>.</span><span class=nx>DB</span><span class=p>,</span> <span class=nx>v</span> <span class=o>*</span><span class=nx>validator</span><span class=p>.</span><span class=nx>Validate</span><span class=p>)</span> <span class=o>*</span><span class=nx>chi</span><span class=p>.</span><span class=nx>Mux</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>r</span> <span class=o>:=</span> <span class=nx>chi</span><span class=p>.</span><span class=nf>NewRouter</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>r</span><span class=p>.</span><span class=nf>Get</span><span class=p>(</span><span class=s>&#34;/livez&#34;</span><span class=p>,</span> <span class=nx>health</span><span class=p>.</span><span class=nx>Read</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>r</span><span class=p>.</span><span class=nf>Route</span><span class=p>(</span><span class=s>&#34;/v1&#34;</span><span class=p>,</span> <span class=kd>func</span><span class=p>(</span><span class=nx>r</span> <span class=nx>chi</span><span class=p>.</span><span class=nx>Router</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>bookAPI</span> <span class=o>:=</span> <span class=nx>book</span><span class=p>.</span><span class=nf>New</span><span class=p>(</span><span class=nx>db</span><span class=p>,</span> <span class=nx>v</span><span class=p>)</span>
+</span></span></code></pre></div><h3 id=6-update-cmdapimaingo>6. Update <code>cmd/api/main.go</code></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>import</span> <span class=nx>validatorUil</span> <span class=s>&#34;myapp/util/validator&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>c</span> <span class=o>:=</span> <span class=nx>config</span><span class=p>.</span><span class=nf>New</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>v</span> <span class=o>:=</span> <span class=nx>validatorUil</span><span class=p>.</span><span class=nf>New</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=kd>var</span> <span class=nx>logLevel</span> <span class=nx>gormlogger</span><span class=p>.</span><span class=nx>LogLevel</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>c</span><span class=p>.</span><span class=nx>DB</span><span class=p>.</span><span class=nx>Debug</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>logLevel</span> <span class=p>=</span> <span class=nx>gormlogger</span><span class=p>.</span><span class=nx>Info</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>logLevel</span> <span class=p>=</span> <span class=nx>gormlogger</span><span class=p>.</span><span class=nx>Error</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>dbString</span> <span class=o>:=</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=nx>fmtDBString</span><span class=p>,</span> <span class=nx>c</span><span class=p>.</span><span class=nx>DB</span><span class=p>.</span><span class=nx>Host</span><span class=p>,</span> <span class=nx>c</span><span class=p>.</span><span class=nx>DB</span><span class=p>.</span><span class=nx>Username</span><span class=p>,</span> <span class=nx>c</span><span class=p>.</span><span class=nx>DB</span><span class=p>.</span><span class=nx>Password</span><span class=p>,</span> <span class=nx>c</span><span class=p>.</span><span class=nx>DB</span><span class=p>.</span><span class=nx>DBName</span><span class=p>,</span> <span class=nx>c</span><span class=p>.</span><span class=nx>DB</span><span class=p>.</span><span class=nx>Port</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>db</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>gorm</span><span class=p>.</span><span class=nf>Open</span><span class=p>(</span><span class=nx>postgres</span><span class=p>.</span><span class=nf>Open</span><span class=p>(</span><span class=nx>dbString</span><span class=p>),</span> <span class=o>&amp;</span><span class=nx>gorm</span><span class=p>.</span><span class=nx>Config</span><span class=p>{</span><span class=nx>Logger</span><span class=p>:</span> <span class=nx>gormlogger</span><span class=p>.</span><span class=nx>Default</span><span class=p>.</span><span class=nf>LogMode</span><span class=p>(</span><span class=nx>logLevel</span><span class=p>)})</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Fatal</span><span class=p>(</span><span class=s>&#34;DB connection start failure&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>r</span> <span class=o>:=</span> <span class=nx>router</span><span class=p>.</span><span class=nf>New</span><span class=p>(</span><span class=nx>db</span><span class=p>,</span> <span class=nx>v</span><span class=p>)</span>
+</span></span></code></pre></div><h3 id=7--run-go-mod-tidy>7. Run <code>go mod tidy</code></h3><p>When we add a new package and use it, we have to run <code>go mod tidy</code> to reorganize the dependencies in the <code>go.mod</code> file.</p><h2 id=using-validator-from-handlers>Using validator from handlers</h2><p>Let&rsquo;s check the error of <a href=https://pkg.go.dev/github.com/go-playground/validator/v10#Validate.Struct target=_blank><code>validator.Validate</code> <code>Struct()</code></a> via the <code>API.validator.Struct()</code></p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=o>*</span><span class=nx>API</span><span class=p>)</span> <span class=nf>Create</span><span class=p>(</span><span class=nx>w</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ResponseWriter</span><span class=p>,</span> <span class=nx>r</span> <span class=o>*</span><span class=nx>http</span><span class=p>.</span><span class=nx>Request</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>form</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>Form</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>json</span><span class=p>.</span><span class=nf>NewDecoder</span><span class=p>(</span><span class=nx>r</span><span class=p>.</span><span class=nx>Body</span><span class=p>).</span><span class=nf>Decode</span><span class=p>(</span><span class=nx>form</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespJSONDecodeFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>a</span><span class=p>.</span><span class=nx>validator</span><span class=p>.</span><span class=nf>Struct</span><span class=p>(</span><span class=nx>form</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>newBook</span> <span class=o>:=</span> <span class=nx>form</span><span class=p>.</span><span class=nf>ToModel</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>newBook</span><span class=p>.</span><span class=nx>ID</span> <span class=p>=</span> <span class=nx>uuid</span><span class=p>.</span><span class=nf>New</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>_</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>a</span><span class=p>.</span><span class=nx>repository</span><span class=p>.</span><span class=nf>Create</span><span class=p>(</span><span class=nx>newBook</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespDBDataInsertFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusCreated</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>It returns an array of <a href=https://pkg.go.dev/github.com/go-playground/validator/v10#FieldError target=_blank>FieldError&rsquo;s</a>.</p><pre tabindex=0><code>Key: &#39;Form.title&#39; Error:Field validation for &#39;title&#39; failed on the &#39;required&#39; tag
 Key: &#39;Form.author&#39; Error:Field validation for &#39;author&#39; failed on the &#39;required&#39; tag
 Key: &#39;Form.published_date&#39; Error:Field validation for &#39;published_date&#39; failed on the &#39;required&#39; tag
 Key: &#39;Form.image_url&#39; Error:Field validation for &#39;image_url&#39; failed on the &#39;url&#39; tag
-</code></pre><p><code>go-playground/validator</code> comes with <a href="https://github.com/go-playground/locales">go-playground/locales</a>  and<a href="https://github.com/go-playground/universal-translator"><code>go-playground/universal-translator</code></a> packages. In here, we use our own much simpler approach to support custom error messages and generate json error response.</p>
-<h3 id="1-add-utilvalidatorresponsego">1. Add <code>util/validator/response.go</code></h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">validator</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="s">&#34;github.com/go-playground/validator/v10&#34;</span>
-</span></span><span class="line"><span class="cl"><span class="p">)</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">type</span> <span class="nx">ErrResponse</span> <span class="kd">struct</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">Errors</span> <span class="p">[]</span><span class="kt">string</span> <span class="s">`json:&#34;errors&#34;`</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">ToErrResponse</span><span class="p">(</span><span class="nx">err</span> <span class="kt">error</span><span class="p">)</span> <span class="o">*</span><span class="nx">ErrResponse</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">fieldErrors</span><span class="p">,</span> <span class="nx">ok</span> <span class="o">:=</span> <span class="nx">err</span><span class="p">.(</span><span class="nx">validator</span><span class="p">.</span><span class="nx">ValidationErrors</span><span class="p">);</span> <span class="nx">ok</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">resp</span> <span class="o">:=</span> <span class="nx">ErrResponse</span><span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="nx">Errors</span><span class="p">:</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">string</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">fieldErrors</span><span class="p">)),</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">		<span class="k">for</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">fieldErrors</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="k">switch</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Tag</span><span class="p">()</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="k">case</span> <span class="s">&#34;required&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">				<span class="nx">resp</span><span class="p">.</span><span class="nx">Errors</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s is a required field&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Field</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">			<span class="k">case</span> <span class="s">&#34;max&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">				<span class="nx">resp</span><span class="p">.</span><span class="nx">Errors</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s must be a maximum of %s in length&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Field</span><span class="p">(),</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Param</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">			<span class="k">case</span> <span class="s">&#34;url&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">				<span class="nx">resp</span><span class="p">.</span><span class="nx">Errors</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s must be a valid URL&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Field</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">			<span class="k">case</span> <span class="s">&#34;alphaspace&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">				<span class="nx">resp</span><span class="p">.</span><span class="nx">Errors</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s can only contain alphabetic and space characters&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Field</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">			<span class="k">case</span> <span class="s">&#34;datetime&#34;</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">				<span class="k">if</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Param</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#34;2006-01-02&#34;</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">					<span class="nx">resp</span><span class="p">.</span><span class="nx">Errors</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s must be a valid date&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Field</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">				<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">					<span class="nx">resp</span><span class="p">.</span><span class="nx">Errors</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;%s must follow %s format&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Field</span><span class="p">(),</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Param</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">				<span class="p">}</span>
-</span></span><span class="line"><span class="cl">			<span class="k">default</span><span class="p">:</span>
-</span></span><span class="line"><span class="cl">				<span class="nx">resp</span><span class="p">.</span><span class="nx">Errors</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">=</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Sprintf</span><span class="p">(</span><span class="s">&#34;something wrong on %s; %s&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Field</span><span class="p">(),</span> <span class="nx">err</span><span class="p">.</span><span class="nf">Tag</span><span class="p">())</span>
-</span></span><span class="line"><span class="cl">			<span class="p">}</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="o">&amp;</span><span class="nx">resp</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="kc">nil</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><p>The <code>ToErrResponse()</code> function helps to convert the array of <a href="https://pkg.go.dev/github.com/go-playground/validator/v10#FieldError">FieldError&rsquo;s</a> returns from <code>go-playground/validator</code> into an <code>ErrResponse</code> struct, which we can be used to generate the JSON error response. For example,</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nt">&#34;errors&#34;</span><span class="p">:</span> <span class="p">[</span>
-</span></span><span class="line"><span class="cl">		<span class="s2">&#34;title is a required field&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">		<span class="s2">&#34;author is a required field&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">		<span class="s2">&#34;published_date is a required field&#34;</span><span class="p">,</span>
-</span></span><span class="line"><span class="cl">		<span class="s2">&#34;image_url must be a valid URL&#34;</span>
-</span></span><span class="line"><span class="cl">	<span class="p">]</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><h3 id="2-update-handlers">2. Update handlers</h3>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nx">validatorUtil</span> <span class="s">&#34;myapp/util/validator&#34;</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="o">*</span><span class="nx">API</span><span class="p">)</span> <span class="nf">Create</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">form</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">Form</span><span class="p">{}</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">NewDecoder</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">Body</span><span class="p">).</span><span class="nf">Decode</span><span class="p">(</span><span class="nx">form</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespJSONDecodeFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">validator</span><span class="p">.</span><span class="nf">Struct</span><span class="p">(</span><span class="nx">form</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">respBody</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">Marshal</span><span class="p">(</span><span class="nx">validatorUtil</span><span class="p">.</span><span class="nf">ToErrResponse</span><span class="p">(</span><span class="nx">err</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespJSONEncodeFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">			<span class="k">return</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ValidationErrors</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">respBody</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">newBook</span> <span class="o">:=</span> <span class="nx">form</span><span class="p">.</span><span class="nf">ToModel</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">newBook</span><span class="p">.</span><span class="nx">ID</span> <span class="p">=</span> <span class="nx">uuid</span><span class="p">.</span><span class="nf">New</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">_</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">repository</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="nx">newBook</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespDBDataInsertFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusCreated</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">a</span> <span class="o">*</span><span class="nx">API</span><span class="p">)</span> <span class="nf">Update</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">id</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">uuid</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="nx">chi</span><span class="p">.</span><span class="nf">URLParam</span><span class="p">(</span><span class="nx">r</span><span class="p">,</span> <span class="s">&#34;id&#34;</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">BadRequest</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespInvalidURLParamID</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">form</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">Form</span><span class="p">{}</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">NewDecoder</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">Body</span><span class="p">).</span><span class="nf">Decode</span><span class="p">(</span><span class="nx">form</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespJSONDecodeFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">validator</span><span class="p">.</span><span class="nf">Struct</span><span class="p">(</span><span class="nx">form</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">respBody</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">Marshal</span><span class="p">(</span><span class="nx">validatorUtil</span><span class="p">.</span><span class="nf">ToErrResponse</span><span class="p">(</span><span class="nx">err</span><span class="p">))</span>
-</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">			<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespJSONEncodeFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">			<span class="k">return</span>
-</span></span><span class="line"><span class="cl">		<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ValidationErrors</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">respBody</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">book</span> <span class="o">:=</span> <span class="nx">form</span><span class="p">.</span><span class="nf">ToModel</span><span class="p">()</span>
-</span></span><span class="line"><span class="cl">	<span class="nx">book</span><span class="p">.</span><span class="nx">ID</span> <span class="p">=</span> <span class="nx">id</span>
-</span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">	<span class="nx">rows</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">a</span><span class="p">.</span><span class="nx">repository</span><span class="p">.</span><span class="nf">Update</span><span class="p">(</span><span class="nx">book</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">e</span><span class="p">.</span><span class="nf">ServerError</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">e</span><span class="p">.</span><span class="nx">RespDBDataUpdateFailure</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">rows</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">{</span>
-</span></span><span class="line"><span class="cl">		<span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusNotFound</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl">		<span class="k">return</span>
-</span></span><span class="line"><span class="cl">	<span class="p">}</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
-</span></span></code></pre></div><h2 id="-final-project-structure">📁 Final project structure</h2>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">myapp
-</span></span><span class="line"><span class="cl">├── cmd
-</span></span><span class="line"><span class="cl">│  ├── api
-</span></span><span class="line"><span class="cl">│  │  └── main.go
-</span></span><span class="line"><span class="cl">│  └── migrate
-</span></span><span class="line"><span class="cl">│     └── main.go
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── api
-</span></span><span class="line"><span class="cl">│  ├── router
-</span></span><span class="line"><span class="cl">│  │  └── router.go
-</span></span><span class="line"><span class="cl">│  │
-</span></span><span class="line"><span class="cl">│  └── resource
-</span></span><span class="line"><span class="cl">│     ├── health
-</span></span><span class="line"><span class="cl">│     │  └── handler.go
-</span></span><span class="line"><span class="cl">│     ├── book
-</span></span><span class="line"><span class="cl">│     │  ├── handler.go
-</span></span><span class="line"><span class="cl">│     │  ├── model.go
-</span></span><span class="line"><span class="cl">│     │  ├── repository.go
-</span></span><span class="line"><span class="cl">│     │  └── repository_test.go
-</span></span><span class="line"><span class="cl">│     └── common
-</span></span><span class="line"><span class="cl">│        └── err
-</span></span><span class="line"><span class="cl">│           └── err.go
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── migrations
-</span></span><span class="line"><span class="cl">│  └── 00001_create_books_table.sql
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── config
-</span></span><span class="line"><span class="cl">│  └── config.go
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── .env
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── go.mod
-</span></span><span class="line"><span class="cl">├── go.sum
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── mock
-</span></span><span class="line"><span class="cl">│  └── db
-</span></span><span class="line"><span class="cl">│     └── db.go
-</span></span><span class="line"><span class="cl">├── util
-</span></span><span class="line"><span class="cl">│  ├── <span class="nb">test</span>
-</span></span><span class="line"><span class="cl">│  │  └── test.go
-</span></span><span class="line"><span class="cl">│  └── validator
-</span></span><span class="line"><span class="cl">│     └── validator.go
-</span></span><span class="line"><span class="cl">│     └── response.go
-</span></span><span class="line"><span class="cl">│
-</span></span><span class="line"><span class="cl">├── docker-compose.yml
-</span></span><span class="line"><span class="cl">└── Dockerfile
-</span></span></code></pre></div><h2 id="-whats-next">👨‍🏫 What&rsquo;s next…</h2>
-<p>In the next article, we’ll add the request logs, error logs and the logger to our application.</p>
-
-        </div>
-
-        <footer>
-          
-
-          
-          
-          
-          
-
-          
-          
-          
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          
-          
-          
-
-          <time datetime="2024-01-21"><i>🕒</i> Updated: 2024-01-21</time>
-          
-          <a href="/docs/repository/"><i>﹤</i> Previous</a>
-          
-
-          
-          <a class="hidden">Next <i>﹥</i></a>
-          
-
-        </footer>
-      </article>
-
-      <aside>
-        <div>
-          <button class="btn"><i>❌</i>Close</button>
-        </div>
-        <strong>On this page</strong>
-        <nav id="TableOfContents">
-  <ul>
-    <li><a href="#adding-error-messages-to-the-api">Adding error messages to the API</a>
-      <ul>
-        <li><a href="#1-identify-and-standardize-errors">1. Identify and standardize errors</a></li>
-        <li><a href="#2-define-helper-functions">2. Define helper functions</a></li>
-        <li><a href="#3-update-api-handlers">3. Update API handlers</a></li>
-      </ul>
-    </li>
-    <li><a href="#adding-validator-to-the-api">Adding validator to the API</a>
-      <ul>
-        <li><a href="#1-add-go-playgroundvalidator">1. Add <code>go-playground/validator</code></a></li>
-        <li><a href="#2-set-validation-tags">2. Set validation tags</a></li>
-        <li><a href="#3-add-utilvalidatorvalidatorgo">3. Add <code>util/validator/validator.go</code></a></li>
-        <li><a href="#4-add-validator-as-an-api-dependency">4. Add validator as an API dependency</a></li>
-        <li><a href="#5-update-router">5. Update router</a></li>
-        <li><a href="#6-update-cmdapimaingo">6. Update <code>cmd/api/main.go</code></a></li>
-        <li><a href="#7--run-go-mod-tidy">7.  Run <code>go mod tidy</code></a></li>
-      </ul>
-    </li>
-    <li><a href="#using-validator-from-handlers">Using validator from handlers</a>
-      <ul>
-        <li><a href="#1-add-utilvalidatorresponsego">1. Add <code>util/validator/response.go</code></a></li>
-        <li><a href="#2-update-handlers">2. Update handlers</a></li>
-      </ul>
-    </li>
-    <li><a href="#-final-project-structure">📁 Final project structure</a></li>
-    <li><a href="#-whats-next">👨‍🏫 What&rsquo;s next…</a></li>
-  </ul>
-</nav>
-      </aside>
-    </main>
-
-    <footer>
-      <div><i>🧑‍💻</i>Built by and copyright<a href="https://github.com/dumindu" target="_blank">Dumindu Madunuwan</a><i>📅</i> 2019-2024<i>🚀</i> <a href="https://github.com/learning-cloud-native-go" target="_blank">GitHub</a></div>
-      <div>
-        <button class="btn"><i>☀️</i><i>⁄</i><i>🌑</i></button>
-      </div>
-    </footer>
-  </div>
-
-</div>
-
-<div id="body-model-outer"></div>
-<script type="text/javascript" src="/assets/js/docs.min.12ffdc25c0149ef34e761ee54587f2aae17affcb8375298ad2180851930cb142.js" integrity=""></script>
-</body>
-</html>
+</code></pre><p><code>go-playground/validator</code> comes with <a href=https://github.com/go-playground/locales target=_blank>go-playground/locales</a> and<a href=https://github.com/go-playground/universal-translator target=_blank><code>go-playground/universal-translator</code></a> packages. In here, we use our own much simpler approach to support custom error messages and generate json error response.</p><h3 id=1-add-utilvalidatorresponsego>1. Add <code>util/validator/response.go</code></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>validator</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;github.com/go-playground/validator/v10&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>ErrResponse</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>Errors</span> <span class=p>[]</span><span class=kt>string</span> <span class=s>`json:&#34;errors&#34;`</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>ToErrResponse</span><span class=p>(</span><span class=nx>err</span> <span class=kt>error</span><span class=p>)</span> <span class=o>*</span><span class=nx>ErrResponse</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>fieldErrors</span><span class=p>,</span> <span class=nx>ok</span> <span class=o>:=</span> <span class=nx>err</span><span class=p>.(</span><span class=nx>validator</span><span class=p>.</span><span class=nx>ValidationErrors</span><span class=p>);</span> <span class=nx>ok</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>resp</span> <span class=o>:=</span> <span class=nx>ErrResponse</span><span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>Errors</span><span class=p>:</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>string</span><span class=p>,</span> <span class=nb>len</span><span class=p>(</span><span class=nx>fieldErrors</span><span class=p>)),</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>for</span> <span class=nx>i</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=k>range</span> <span class=nx>fieldErrors</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=k>switch</span> <span class=nx>err</span><span class=p>.</span><span class=nf>Tag</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=k>case</span> <span class=s>&#34;required&#34;</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>				<span class=nx>resp</span><span class=p>.</span><span class=nx>Errors</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=p>=</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;%s is a required field&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>.</span><span class=nf>Field</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>			<span class=k>case</span> <span class=s>&#34;max&#34;</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>				<span class=nx>resp</span><span class=p>.</span><span class=nx>Errors</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=p>=</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;%s must be a maximum of %s in length&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>.</span><span class=nf>Field</span><span class=p>(),</span> <span class=nx>err</span><span class=p>.</span><span class=nf>Param</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>			<span class=k>case</span> <span class=s>&#34;url&#34;</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>				<span class=nx>resp</span><span class=p>.</span><span class=nx>Errors</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=p>=</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;%s must be a valid URL&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>.</span><span class=nf>Field</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>			<span class=k>case</span> <span class=s>&#34;alphaspace&#34;</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>				<span class=nx>resp</span><span class=p>.</span><span class=nx>Errors</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=p>=</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;%s can only contain alphabetic and space characters&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>.</span><span class=nf>Field</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>			<span class=k>case</span> <span class=s>&#34;datetime&#34;</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>				<span class=k>if</span> <span class=nx>err</span><span class=p>.</span><span class=nf>Param</span><span class=p>()</span> <span class=o>==</span> <span class=s>&#34;2006-01-02&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>					<span class=nx>resp</span><span class=p>.</span><span class=nx>Errors</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=p>=</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;%s must be a valid date&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>.</span><span class=nf>Field</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>				<span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>					<span class=nx>resp</span><span class=p>.</span><span class=nx>Errors</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=p>=</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;%s must follow %s format&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>.</span><span class=nf>Field</span><span class=p>(),</span> <span class=nx>err</span><span class=p>.</span><span class=nf>Param</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>				<span class=p>}</span>
+</span></span><span class=line><span class=cl>			<span class=k>default</span><span class=p>:</span>
+</span></span><span class=line><span class=cl>				<span class=nx>resp</span><span class=p>.</span><span class=nx>Errors</span><span class=p>[</span><span class=nx>i</span><span class=p>]</span> <span class=p>=</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;something wrong on %s; %s&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>.</span><span class=nf>Field</span><span class=p>(),</span> <span class=nx>err</span><span class=p>.</span><span class=nf>Tag</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=k>return</span> <span class=o>&amp;</span><span class=nx>resp</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>return</span> <span class=kc>nil</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>The <code>ToErrResponse()</code> function helps to convert the array of <a href=https://pkg.go.dev/github.com/go-playground/validator/v10#FieldError target=_blank>FieldError&rsquo;s</a> returns from <code>go-playground/validator</code> into an <code>ErrResponse</code> struct, which we can be used to generate the JSON error response. For example,</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-json data-lang=json><span class=line><span class=cl><span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nt>&#34;errors&#34;</span><span class=p>:</span> <span class=p>[</span>
+</span></span><span class=line><span class=cl>		<span class=s2>&#34;title is a required field&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=s2>&#34;author is a required field&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=s2>&#34;published_date is a required field&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=s2>&#34;image_url must be a valid URL&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=p>]</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><h3 id=2-update-handlers>2. Update handlers</h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>import</span> <span class=nx>validatorUtil</span> <span class=s>&#34;myapp/util/validator&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=o>*</span><span class=nx>API</span><span class=p>)</span> <span class=nf>Create</span><span class=p>(</span><span class=nx>w</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ResponseWriter</span><span class=p>,</span> <span class=nx>r</span> <span class=o>*</span><span class=nx>http</span><span class=p>.</span><span class=nx>Request</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>form</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>Form</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>json</span><span class=p>.</span><span class=nf>NewDecoder</span><span class=p>(</span><span class=nx>r</span><span class=p>.</span><span class=nx>Body</span><span class=p>).</span><span class=nf>Decode</span><span class=p>(</span><span class=nx>form</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespJSONDecodeFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>a</span><span class=p>.</span><span class=nx>validator</span><span class=p>.</span><span class=nf>Struct</span><span class=p>(</span><span class=nx>form</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>respBody</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>json</span><span class=p>.</span><span class=nf>Marshal</span><span class=p>(</span><span class=nx>validatorUtil</span><span class=p>.</span><span class=nf>ToErrResponse</span><span class=p>(</span><span class=nx>err</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespJSONEncodeFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=k>return</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ValidationErrors</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>respBody</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>newBook</span> <span class=o>:=</span> <span class=nx>form</span><span class=p>.</span><span class=nf>ToModel</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>newBook</span><span class=p>.</span><span class=nx>ID</span> <span class=p>=</span> <span class=nx>uuid</span><span class=p>.</span><span class=nf>New</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>_</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>a</span><span class=p>.</span><span class=nx>repository</span><span class=p>.</span><span class=nf>Create</span><span class=p>(</span><span class=nx>newBook</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespDBDataInsertFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusCreated</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=p>(</span><span class=nx>a</span> <span class=o>*</span><span class=nx>API</span><span class=p>)</span> <span class=nf>Update</span><span class=p>(</span><span class=nx>w</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ResponseWriter</span><span class=p>,</span> <span class=nx>r</span> <span class=o>*</span><span class=nx>http</span><span class=p>.</span><span class=nx>Request</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>id</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>uuid</span><span class=p>.</span><span class=nf>Parse</span><span class=p>(</span><span class=nx>chi</span><span class=p>.</span><span class=nf>URLParam</span><span class=p>(</span><span class=nx>r</span><span class=p>,</span> <span class=s>&#34;id&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>BadRequest</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespInvalidURLParamID</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>form</span> <span class=o>:=</span> <span class=o>&amp;</span><span class=nx>Form</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>json</span><span class=p>.</span><span class=nf>NewDecoder</span><span class=p>(</span><span class=nx>r</span><span class=p>.</span><span class=nx>Body</span><span class=p>).</span><span class=nf>Decode</span><span class=p>(</span><span class=nx>form</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespJSONDecodeFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>a</span><span class=p>.</span><span class=nx>validator</span><span class=p>.</span><span class=nf>Struct</span><span class=p>(</span><span class=nx>form</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>respBody</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>json</span><span class=p>.</span><span class=nf>Marshal</span><span class=p>(</span><span class=nx>validatorUtil</span><span class=p>.</span><span class=nf>ToErrResponse</span><span class=p>(</span><span class=nx>err</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>		<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespJSONEncodeFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=k>return</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ValidationErrors</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>respBody</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>book</span> <span class=o>:=</span> <span class=nx>form</span><span class=p>.</span><span class=nf>ToModel</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>book</span><span class=p>.</span><span class=nx>ID</span> <span class=p>=</span> <span class=nx>id</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>rows</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>a</span><span class=p>.</span><span class=nx>repository</span><span class=p>.</span><span class=nf>Update</span><span class=p>(</span><span class=nx>book</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span><span class=p>.</span><span class=nf>ServerError</span><span class=p>(</span><span class=nx>w</span><span class=p>,</span> <span class=nx>e</span><span class=p>.</span><span class=nx>RespDBDataUpdateFailure</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>rows</span> <span class=o>==</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusNotFound</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><h2 id=-final-project-structure>📁 Final project structure</h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>myapp
+</span></span><span class=line><span class=cl>├── cmd
+</span></span><span class=line><span class=cl>│  ├── api
+</span></span><span class=line><span class=cl>│  │  └── main.go
+</span></span><span class=line><span class=cl>│  └── migrate
+</span></span><span class=line><span class=cl>│     └── main.go
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── api
+</span></span><span class=line><span class=cl>│  ├── router
+</span></span><span class=line><span class=cl>│  │  └── router.go
+</span></span><span class=line><span class=cl>│  │
+</span></span><span class=line><span class=cl>│  └── resource
+</span></span><span class=line><span class=cl>│     ├── health
+</span></span><span class=line><span class=cl>│     │  └── handler.go
+</span></span><span class=line><span class=cl>│     ├── book
+</span></span><span class=line><span class=cl>│     │  ├── handler.go
+</span></span><span class=line><span class=cl>│     │  ├── model.go
+</span></span><span class=line><span class=cl>│     │  ├── repository.go
+</span></span><span class=line><span class=cl>│     │  └── repository_test.go
+</span></span><span class=line><span class=cl>│     └── common
+</span></span><span class=line><span class=cl>│        └── err
+</span></span><span class=line><span class=cl>│           └── err.go
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── migrations
+</span></span><span class=line><span class=cl>│  └── 00001_create_books_table.sql
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── config
+</span></span><span class=line><span class=cl>│  └── config.go
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── .env
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── go.mod
+</span></span><span class=line><span class=cl>├── go.sum
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── mock
+</span></span><span class=line><span class=cl>│  └── db
+</span></span><span class=line><span class=cl>│     └── db.go
+</span></span><span class=line><span class=cl>├── util
+</span></span><span class=line><span class=cl>│  ├── <span class=nb>test</span>
+</span></span><span class=line><span class=cl>│  │  └── test.go
+</span></span><span class=line><span class=cl>│  └── validator
+</span></span><span class=line><span class=cl>│     └── validator.go
+</span></span><span class=line><span class=cl>│     └── response.go
+</span></span><span class=line><span class=cl>│
+</span></span><span class=line><span class=cl>├── docker-compose.yml
+</span></span><span class=line><span class=cl>└── Dockerfile
+</span></span></code></pre></div><h2 id=-whats-next>👨‍🏫 What&rsquo;s next…</h2><p>In the next article, we’ll add the request logs, error logs and the logger to our application.</p></div><footer><time datetime=2024-01-21><i>🕒</i> Updated: 2024-01-21</time>
+<a href=https://learning-cloud-native-go.github.io/docs/repository/><i>﹤</i> Previous</a>
+<a class=hidden>Next <i>﹥</i></a></footer></article><aside><div><button class=btn><i>❌</i>Close</button></div><strong>On this page</strong><nav id=TableOfContents><ul><li><a href=#adding-error-messages-to-the-api>Adding error messages to the API</a><ul><li><a href=#1-identify-and-standardize-errors>1. Identify and standardize errors</a></li><li><a href=#2-define-helper-functions>2. Define helper functions</a></li><li><a href=#3-update-api-handlers>3. Update API handlers</a></li></ul></li><li><a href=#adding-validator-to-the-api>Adding validator to the API</a><ul><li><a href=#1-add-go-playgroundvalidator>1. Add <code>go-playground/validator</code></a></li><li><a href=#2-set-validation-tags>2. Set validation tags</a></li><li><a href=#3-add-utilvalidatorvalidatorgo>3. Add <code>util/validator/validator.go</code></a></li><li><a href=#4-add-validator-as-an-api-dependency>4. Add validator as an API dependency</a></li><li><a href=#5-update-router>5. Update router</a></li><li><a href=#6-update-cmdapimaingo>6. Update <code>cmd/api/main.go</code></a></li><li><a href=#7--run-go-mod-tidy>7. Run <code>go mod tidy</code></a></li></ul></li><li><a href=#using-validator-from-handlers>Using validator from handlers</a><ul><li><a href=#1-add-utilvalidatorresponsego>1. Add <code>util/validator/response.go</code></a></li><li><a href=#2-update-handlers>2. Update handlers</a></li></ul></li><li><a href=#-final-project-structure>📁 Final project structure</a></li><li><a href=#-whats-next>👨‍🏫 What&rsquo;s next…</a></li></ul></nav></aside></main><footer><div><i>🧑‍💻</i>Built by and copyright<a href=https://github.com/dumindu target=_blank>Dumindu Madunuwan</a><i>📅</i> 2019-2024<i>🚀</i> <a href=https://github.com/learning-cloud-native-go target=_blank>GitHub</a></div><div><button class=btn><i>☀️</i><i>⁄</i><i>🌑</i></button></div></footer></div></div><div id=body-model-outer></div><script type=text/javascript src=/assets/js/docs.min.12ffdc25c0149ef34e761ee54587f2aae17affcb8375298ad2180851930cb142.js integrity></script></body></html>

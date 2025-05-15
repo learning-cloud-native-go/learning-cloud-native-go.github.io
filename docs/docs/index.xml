@@ -1,76 +1,64 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Docs on Learning Cloud Native Go</title>
-    <link>https://learning-cloud-native-go.github.io/docs/</link>
-    <description>Recent content in Docs on Learning Cloud Native Go</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-US</language>
-    <atom:link href="https://learning-cloud-native-go.github.io/docs/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Building a Dockerized RESTful API application in Go</title>
-      <link>https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application-in-go/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application-in-go/</guid>
-      <description>👨‍🏫 In this series&amp;hellip;
-In this series, we are going to build a Dockerized Go RESTful API for a bookshelf with these steps:
-Create a basic server using Go&amp;rsquo;s net/http package and Dockerize it. Add the database, SQL migration files, and create the migrate app to run these migration files. Implement dynamic application configurations via environment variables. Integrate Chi, add initial API routes, and generate OpenAPI specifications. Integrate GORM, implement repository functions with tests, and invoke repository from the handlers.</description>
-    </item>
-    <item>
-      <title>Configurations</title>
-      <link>https://learning-cloud-native-go.github.io/docs/configurations/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://learning-cloud-native-go.github.io/docs/configurations/</guid>
-      <description>👨‍🏫 Before we start&amp;hellip;
-Configurations can be stored in a variety of formats, such as .xml, .json, .env, .yaml, and .toml files, as well as systems like etcd, AWS Parameter Store, and GCP Runtime Configurator. In this project, we will save the configurations in an .env file and use docker-compose to load them into the development environment. Go standard library provides the os.Getenv() function to read each environment variable separately. But there are Go libraries such as spf13/viper, kelseyhightower/envconfig, caarlos0/env, and joeshaw/envdecode to read environment variables in bulk and populate them as a struct.</description>
-    </item>
-    <item>
-      <title>Database and migrations</title>
-      <link>https://learning-cloud-native-go.github.io/docs/database-and-migrations/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://learning-cloud-native-go.github.io/docs/database-and-migrations/</guid>
-      <description>👨‍🏫 Before we start&amp;hellip;
-We&amp;rsquo;ll run a Postgres database via docker-compose. There are a few popular database migration tools in the Go ecosystem, like golang-migrate/migrate, pressly/goose, GORM migrations, etc. We selected pressly/goose due to its simplicity, lesser resource usage, and customizability. But, instead of using its prebuilt binaries, we&amp;rsquo;ll build a custom binary with static drivers, settings, and more simplified commands. ⭐ We&amp;rsquo;ll store all SQL database migration files in the migrations folder in the project root.</description>
-    </item>
-    <item>
-      <title>Error handling</title>
-      <link>https://learning-cloud-native-go.github.io/docs/error-handling/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://learning-cloud-native-go.github.io/docs/error-handling/</guid>
-      <description>👨‍🏫 Before we start&amp;hellip;
-Go error values usually provide a more detailed context about what actually went wrong. However, returning the actual error messages to end user mostly cause confusion and make the system vulnerable to security threats. So, when an error occurs, we will send a custom but meaningful error message to the end-user. We choose the go-playground/validator for form validations, as it supports struct level validations, extensive validation rules, customizable error handling, etc.</description>
-    </item>
-    <item>
-      <title>Hello World server</title>
-      <link>https://learning-cloud-native-go.github.io/docs/hello-world-server/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://learning-cloud-native-go.github.io/docs/hello-world-server/</guid>
-      <description>👨‍🏫 Before we start&amp;hellip;
-Go comes with the net/http package, which provides HTTP client and server implementations. So, We&amp;rsquo;ll start with the examples of the standard library documentation. Then, we will Dockerize and rearrange the files with an idiomatic project structure. ⭐ We use myapp as the project name/ project root folder name. ListenAndServe 📖 ListenAndServe listens on the TCP network address addr and then calls Serve with handler to handle requests on incoming connections.</description>
-    </item>
-    <item>
-      <title>Overview</title>
-      <link>https://learning-cloud-native-go.github.io/docs/overview/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://learning-cloud-native-go.github.io/docs/overview/</guid>
-      <description>About me 🧑‍💻 I am an expat working in Singapore as a Go Backend and DevOps Engineer. Feel free to reach out if you find any mistakes or anything that needs to be changed, including spelling or grammar errors. Alternatively, you can create a pull request, open an issue, or share your awesome ideas in this gist. Good luck with learning cloud native Go!
-Cloud Native Applications ☁️ Clouds are virtual resource pools (storage, raw processing power, or cloud-based applications) that users can access on-demand.</description>
-    </item>
-    <item>
-      <title>Repository</title>
-      <link>https://learning-cloud-native-go.github.io/docs/repository/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://learning-cloud-native-go.github.io/docs/repository/</guid>
-      <description>👨‍🏫 Before we start&amp;hellip;
-The repository pattern is a design pattern in software development used to isolate/ abstract the data layer. Go standard library provides the database/sql package to interaction with SQL databases. But there are Go libraries such as sqlx, sqlc, GORM, Ent which can be a good fit for your requirements. We choose GORM because it&amp;rsquo;s good for rapid development and to handle complex database transactions comfortably. Adding repository 1.</description>
-    </item>
-    <item>
-      <title>Routes and OpenAPI specification</title>
-      <link>https://learning-cloud-native-go.github.io/docs/routes-and-openapi-specification/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://learning-cloud-native-go.github.io/docs/routes-and-openapi-specification/</guid>
-      <description>👨‍🏫 Before we start&amp;hellip;
-Resource-oriented design helps to create a predictable, uniform interface for designing and developing APIs. We&amp;rsquo;ll start by implementing a common interface and designing our APIs based on it. gorilla/mux and go-chi/chi are the popular router packages in the Go ecosystem. We&amp;rsquo;ll go with go-chi/chi because of its lightweightness and 100% compatibility with net/http. We&amp;rsquo;ll use swaggo/swag to generate the OpenAPI specification from the annotations in each handler, even though it still supports only OpenAPI 2/ Swagger 2.</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Docs on Learning Cloud Native Go</title><link>https://learning-cloud-native-go.github.io/docs/</link><description>Recent content in Docs on Learning Cloud Native Go</description><generator>Hugo</generator><language>en-US</language><atom:link href="https://learning-cloud-native-go.github.io/docs/index.xml" rel="self" type="application/rss+xml"/><item><title>Building a Dockerized RESTful API application in Go</title><link>https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application-in-go/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/building-a-dockerized-restful-api-application-in-go/</guid><description>&lt;blockquote class="info">&lt;p>&lt;strong>👨‍🏫&lt;/strong> &lt;strong>In this series&amp;hellip;&lt;/strong>&lt;/p>
+&lt;p>In this series, we are going to build a Dockerized Go RESTful API for a bookshelf with these steps:&lt;/p>
+&lt;ul>
+&lt;li>Create a basic server using Go&amp;rsquo;s &lt;code>net/http&lt;/code> package and Dockerize it.&lt;/li>
+&lt;li>Add the database, SQL migration files, and create the &lt;code>migrate&lt;/code> app to run these migration files.&lt;/li>
+&lt;li>Implement dynamic application configurations via environment variables.&lt;/li>
+&lt;li>Integrate Chi, add initial API routes, and generate OpenAPI specifications.&lt;/li>
+&lt;li>Integrate GORM, implement repository functions with tests, and invoke repository from the handlers.&lt;/li>
+&lt;li>Enhance error handling and integrate Validator v10 for form validations.&lt;/li>
+&lt;li>Implement error logs and request logs via Zerolog.&lt;/li>
+&lt;/ul>&lt;/blockquote>
+&lt;h2 id="-the-codebase">📦 The codebase&lt;/h2>
+&lt;p>The completed API application supports the following API endpoints.&lt;/p></description></item><item><title>Configurations</title><link>https://learning-cloud-native-go.github.io/docs/configurations/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/configurations/</guid><description>&lt;blockquote class="info">&lt;p>&lt;strong>👨‍🏫&lt;/strong> &lt;strong>Before we start&amp;hellip;&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Configurations can be stored in a variety of formats, such as &lt;code>.xml&lt;/code>, &lt;code>.json&lt;/code>, &lt;code>.env&lt;/code>, &lt;code>.yaml&lt;/code>, and &lt;code>.toml&lt;/code> files, as well as systems like &lt;a href="https://etcd.io/" target="_blank" >&lt;code>etcd&lt;/code>&lt;/a>, &lt;a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html" target="_blank" >AWS Parameter Store&lt;/a>, and &lt;a href="https://cloud.google.com/deployment-manager/runtime-configurator/" target="_blank" >GCP Runtime Configurator&lt;/a>. In this project, we will save the configurations in an &lt;code>.env&lt;/code> file and use &lt;code>docker-compose&lt;/code> to load them into the development environment.&lt;/li>
+&lt;li>Go standard library provides the &lt;a href="https://golang.org/pkg/os/#Getenv" target="_blank" >&lt;code>os.Getenv()&lt;/code>&lt;/a> function to read each environment variable separately. But there are Go libraries such as &lt;a href="https://github.com/spf13/viper" target="_blank" >&lt;code>spf13/viper&lt;/code>&lt;/a>, &lt;a href="https://github.com/kelseyhightower/envconfig" target="_blank" >&lt;code>kelseyhightower/envconfig&lt;/code>&lt;/a>, &lt;a href="https://github.com/caarlos0/env" target="_blank" >&lt;code>caarlos0/env&lt;/code>&lt;/a>, and &lt;a href="https://github.com/joeshaw/envdecode" target="_blank" >&lt;code>joeshaw/envdecode&lt;/code>&lt;/a> to read environment variables in bulk and populate them as a struct. We choose &lt;a href="https://github.com/joeshaw/envdecode" target="_blank" >&lt;code>joeshaw/envdecode&lt;/code>&lt;/a> for this project because it includes validations, zero-dependency, and ease of use.&lt;/li>
+&lt;/ul>&lt;/blockquote>
+&lt;h2 id="populate-environment-variables-with-docker">Populate environment variables with Docker&lt;/h2>
+&lt;p>💡 We use &lt;code>docker-compose&lt;/code> with the &lt;a href="https://docs.docker.com/compose/compose-file/compose-file-v3/#env_file" target="_blank" >&lt;code>env_file&lt;/code>&lt;/a> option to load the environment variables into the development environment. If you are using &lt;code>docker run&lt;/code>, you can use the &lt;a href="https://docs.docker.com/engine/reference/commandline/run/#options" target="_blank" >&lt;code>--env-file&lt;/code> option&lt;/a> with it.&lt;/p></description></item><item><title>Database and migrations</title><link>https://learning-cloud-native-go.github.io/docs/database-and-migrations/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/database-and-migrations/</guid><description>&lt;blockquote class="info">&lt;p>&lt;strong>👨‍🏫&lt;/strong> &lt;strong>Before we start&amp;hellip;&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>We&amp;rsquo;ll run a Postgres database via &lt;code>docker-compose&lt;/code>.&lt;/li>
+&lt;li>There are a few popular database migration tools in the Go ecosystem, like &lt;a href="https://github.com/golang-migrate/migrate" target="_blank" >&lt;code>golang-migrate/migrate&lt;/code>&lt;/a>, &lt;a href="https://github.com/pressly/goose" target="_blank" >&lt;code>pressly/goose&lt;/code>&lt;/a>, &lt;a href="http://gorm.io/docs/migration.html" target="_blank" >GORM migrations&lt;/a>, etc. We selected &lt;a href="https://github.com/pressly/goose" target="_blank" >&lt;code>pressly/goose&lt;/code>&lt;/a> due to its simplicity, lesser resource usage, and customizability. But, instead of using its prebuilt binaries, we&amp;rsquo;ll build a custom binary with static drivers, settings, and more simplified commands.&lt;/li>
+&lt;li>⭐ We&amp;rsquo;ll store all &lt;code>SQL&lt;/code> database migration files in the &lt;code>migrations&lt;/code> folder in the project root.&lt;/li>
+&lt;/ul>&lt;/blockquote>
+&lt;h2 id="database-design">Database Design&lt;/h2>
+&lt;p>In this article series, we are building a RESTful CRUD API for a simple bookshelf. We&amp;rsquo;ll use the &lt;a href="https://en.wikipedia.org/wiki/PostgreSQL" target="_blank" >Postgres&lt;/a> database and a table called &amp;ldquo;books&amp;rdquo; to store the data, which has the following columns.&lt;/p></description></item><item><title>Error handling</title><link>https://learning-cloud-native-go.github.io/docs/error-handling/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/error-handling/</guid><description>&lt;blockquote class="info">&lt;p>&lt;strong>👨‍🏫&lt;/strong> &lt;strong>Before we start&amp;hellip;&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Go &lt;code>error&lt;/code> values usually provide a more detailed context about what actually went wrong. However, returning the actual error messages to end user mostly cause confusion and make the system vulnerable to security threats. So, when an error occurs, we will send a custom but meaningful error message to the end-user.&lt;/li>
+&lt;li>We choose the &lt;a href="https://github.com/go-playground/validator/" target="_blank" >&lt;code>go-playground/validator&lt;/code>&lt;/a> for form validations, as it supports struct level validations, extensive validation rules, customizable error handling, etc.&lt;/li>
+&lt;/ul>&lt;/blockquote>
+&lt;h2 id="adding-error-messages-to-the-api">Adding error messages to the API&lt;/h2>
+&lt;h3 id="1-identify-and-standardize-errors">1. Identify and standardize errors&lt;/h3>
+&lt;p>While an error occurs, returning the actual error details to the end-user could result in a poor user/ developer experience and could potentially expose sensitive information and posing a security risk. Let&amp;rsquo;s identify the error cases and standardize our error messages.&lt;/p></description></item><item><title>Hello World server</title><link>https://learning-cloud-native-go.github.io/docs/hello-world-server/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/hello-world-server/</guid><description>&lt;blockquote class="info">&lt;p>&lt;strong>👨‍🏫&lt;/strong> &lt;strong>Before we start&amp;hellip;&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Go comes with the &lt;a href="https://pkg.go.dev/net/http" target="_blank" >&lt;code>net/http&lt;/code>&lt;/a> package, which provides HTTP client and server implementations. So,&lt;/li>
+&lt;li>We&amp;rsquo;ll start with the examples of the standard library documentation.&lt;/li>
+&lt;li>Then, we will Dockerize and rearrange the files with an idiomatic project structure.&lt;/li>
+&lt;li>⭐ We use &lt;code>myapp&lt;/code> as the project name/ project root folder name.&lt;/li>
+&lt;/ul>&lt;/blockquote>
+&lt;h2 id="listenandserve">&lt;code>ListenAndServe&lt;/code>&lt;/h2>
+&lt;blockquote>
+&lt;p>&lt;a href="https://pkg.go.dev/net/http#ListenAndServe" target="_blank" >📖 &lt;code>ListenAndServe&lt;/code>&lt;/a> listens on the TCP network address addr and then calls Serve with handler to handle requests on incoming connections. Accepted connections are configured to enable TCP keep-alives.&lt;/p></description></item><item><title>Overview</title><link>https://learning-cloud-native-go.github.io/docs/overview/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/overview/</guid><description>&lt;h2 id="about-me">About me&lt;/h2>
+&lt;blockquote>
+&lt;p>🧑‍💻 I am an expat working in Singapore as a Go Backend and DevOps Engineer. Feel free to reach out if you find any mistakes or anything that needs to be changed, including spelling or grammar errors. Alternatively, you can create a pull request, open an issue, or &lt;a href="https://gist.github.com/dumindu/153b6cf8a346d3a1aad51e17291d4dda" target="_blank" >share your awesome ideas in this gist&lt;/a>. Good luck with learning cloud native Go!&lt;/p>&lt;/blockquote>
+&lt;p>&lt;a href="https://github.com/learning-cloud-native-go/myapp" target="_blank" >&lt;img src="https://img.shields.io/github/stars/learning-cloud-native-go/myapp?style=for-the-badge&amp;amp;logo=go&amp;amp;logoColor=333333&amp;amp;label=learning-cloud-native-go/myapp&amp;amp;labelColor=f9f9f9&amp;amp;color=00ADD8" alt="learning-cloud-native-go/myapp">&lt;/a>
+&lt;a href="https://github.com/learning-cloud-native-go/learning-cloud-native-go.github.io" target="_blank" >&lt;img src="https://img.shields.io/github/stars/learning-cloud-native-go/learning-cloud-native-go.github.io?style=for-the-badge&amp;amp;logo=go&amp;amp;logoColor=333333&amp;amp;label=learning-cloud-native-go.github.io&amp;amp;labelColor=f9f9f9&amp;amp;color=00ADD8" alt="learning-cloud-native-go.github.io">&lt;/a>
+&lt;a href="https://learning-rust.github.io" target="_blank" >&lt;img src="https://img.shields.io/github/stars/learning-rust/learning-rust.github.io?style=for-the-badge&amp;amp;logo=rust&amp;amp;label=learning-rust.github.io&amp;amp;logoColor=333333&amp;amp;labelColor=f9f9f9&amp;amp;color=F46623" alt="learning-rust.github.io">&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://github.com/dumindu" target="_blank" >&lt;img src="https://img.shields.io/badge/dumindu-866ee7?style=for-the-badge&amp;amp;logo=GitHub&amp;amp;logoColor=333333&amp;amp;labelColor=f9f9f9" alt="github.com">&lt;/a>
+&lt;a href="https://www.buymeacoffee.com/dumindu" target="_blank" >&lt;img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-dumindu-FFDD00?style=for-the-badge&amp;amp;logo=buymeacoffee&amp;amp;logoColor=333333&amp;amp;labelColor=f9f9f9" alt="buymeacoffee">&lt;/a>&lt;/p></description></item><item><title>Repository</title><link>https://learning-cloud-native-go.github.io/docs/repository/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/repository/</guid><description>&lt;blockquote class="info">&lt;p>&lt;strong>👨‍🏫&lt;/strong> &lt;strong>Before we start&amp;hellip;&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>The repository pattern is a design pattern in software development used to isolate/ abstract the data layer.&lt;/li>
+&lt;li>Go standard library provides the &lt;a href="https://pkg.go.dev/database/sql" target="_blank" >&lt;code>database/sql&lt;/code>&lt;/a> package to interaction with SQL databases. But there are Go libraries such as &lt;a href="https://github.com/jmoiron/sqlx" target="_blank" >&lt;code>sqlx&lt;/code>&lt;/a>, &lt;a href="https://github.com/sqlc-dev/sqlc" target="_blank" >&lt;code>sqlc&lt;/code>&lt;/a>, &lt;a href="https://gorm.io/" target="_blank" >GORM&lt;/a>, &lt;a href="https://entgo.io" target="_blank" >Ent&lt;/a> which can be a good fit for your requirements. We choose GORM because it&amp;rsquo;s good for rapid development and to handle complex database transactions comfortably.&lt;/li>
+&lt;/ul>&lt;/blockquote>
+&lt;h2 id="adding-repository">Adding repository&lt;/h2>
+&lt;h3 id="1-add-gorm">1. Add GORM&lt;/h3>
+&lt;p>GORM is a comprehensive &lt;a href="https://en.wikipedia.org/wiki/Object%e2%80%93relational_mapping" target="_blank" >ORM&lt;/a> for Go. Its features include CRUD operations, querying, association handling, auto migrations, preloading, hooks, and much more. It is also compatible with various SQL databases including MySQL, PostgreSQL, SQLite, and SQL Server. Please refer to the &lt;a href="https://gorm.io/docs/" target="_blank" >GORM documentation&lt;/a> for more information.&lt;/p></description></item><item><title>Routes and OpenAPI specification</title><link>https://learning-cloud-native-go.github.io/docs/routes-and-openapi-specification/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/routes-and-openapi-specification/</guid><description>&lt;blockquote class="info">&lt;p>&lt;strong>👨‍🏫&lt;/strong> &lt;strong>Before we start&amp;hellip;&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Resource-oriented design helps to create a predictable, uniform interface for designing and developing APIs. We&amp;rsquo;ll start by implementing a common interface and designing our APIs based on it.&lt;/li>
+&lt;li>&lt;a href="https://github.com/gorilla/mux" target="_blank" >&lt;code>gorilla/mux&lt;/code>&lt;/a> and &lt;a href="https://github.com/go-chi/chi" target="_blank" >&lt;code>go-chi/chi&lt;/code>&lt;/a> are the popular router packages in the Go ecosystem. We&amp;rsquo;ll go with &lt;a href="https://github.com/go-chi/chi" target="_blank" >&lt;code>go-chi/chi&lt;/code>&lt;/a> because of its lightweightness and 100% compatibility with &lt;code>net/http&lt;/code>.&lt;/li>
+&lt;li>We&amp;rsquo;ll use &lt;a href="https://github.com/swaggo/swag" target="_blank" >swaggo/swag&lt;/a> to generate the OpenAPI specification from the annotations in each handler, even though it still supports only OpenAPI 2/ Swagger 2.0 specifications. Packages such as &lt;a href="https://github.com/swaggest/rest" target="_blank" >swaggest/rest&lt;/a>, &lt;a href="https://github.com/deepmap/oapi-codegen" target="_blank" >deepmap/oapi-codegen&lt;/a> support OpenAPI 3, but these are custom boilerplate generators with/ from OpenAPI 3 specifications.&lt;/li>
+&lt;/ul>&lt;/blockquote>
+&lt;h2 id="resource-oriented-design">Resource oriented design&lt;/h2>
+&lt;blockquote>
+&lt;p>&lt;a href="https://en.wikipedia.org/wiki/Resource-oriented_architecture" target="_blank" >🔍&lt;/a> Resource oriented architecture is a style of software architecture and programming paradigm for supportively designing and developing software in the form of inter-networking of resources with &amp;ldquo;RESTful&amp;rdquo; interfaces, first described by Leonard Richardson and Sam Ruby in their book &amp;ldquo;RESTful Web Services&amp;rdquo; in 2007.&lt;/p></description></item></channel></rss>
