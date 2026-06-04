@@ -1,0 +1,17 @@
+User-agent: Googlebot
+User-agent: YandexBot
+User-agent: baiduspider
+User-agent: Applebot
+Allow: /
+
+User-agent: *
+Disallow: /docs/building-a-dockerized-restful-api-application-in-go/
+Disallow: /docs/configurations/
+Disallow: /docs/database-and-migrations/
+Disallow: /docs/
+Disallow: /docs/error-handling/
+Disallow: /docs/hello-world-server/
+Disallow: /
+Disallow: /docs/overview/
+Disallow: /docs/repository/
+Disallow: /docs/routes-and-openapi-specification/
