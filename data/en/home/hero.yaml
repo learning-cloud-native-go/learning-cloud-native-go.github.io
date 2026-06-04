@@ -1,0 +1,15 @@
+badge: Made by a human · Made for a human
+
+svg: hero.svg
+
+title: Go Beyond. <br/><span>To The Cloud.</span>
+
+description: Cloud Native Go Tutorials for Everyone!
+
+btn_primary:
+  label: Get Started
+  url: /docs
+
+btn_secondary:
+  label: Contribute
+  url: https://github.com/learning-cloud-native-go

@@ -1,0 +1,72 @@
+theme: E25DX
+
+enableGitInfo: true
+disableKinds: [taxonomy, term]
+disableHugoGeneratorInject: true
+
+publishDir: docs
+baseURL: https://learning-cloud-native-go.github.io
+
+defaultContentLanguage: en
+
+languages:
+  en:
+    languageName: English
+    languageCode: en-US
+    contentDir: content/en
+    title: Learning Cloud Native Go
+    params:
+      description: Cloud Native Go Tutorials for Everyone!
+    weight: 1
+
+services:
+  googleAnalytics:
+    ID: G-H3GD0XFJ42
+
+enableRobotsTXT: true
+
+markup:
+  highlight:
+    noClasses: false
+  goldmark:
+    renderer:
+      unsafe: true
+    parser:
+      attribute:
+        block: true
+        title: true
+  tableOfContents:
+    pre: <nav id="TableOfContents" aria-label="Table of Contents">
+    post: </nav>
+
+params:
+  project:
+    startYear: 2019
+    presentYear: 2026
+    repo:
+      main: https://github.com/learning-cloud-native-go
+    themeColor:
+      light: "#ffffff"
+      dark: "#101010"
+
+  author:
+    name: Dumindu Madunuwan
+    url: https://github.com/dumindu
+
+  enableOGXSEO: true
+  enablePageFind: true
+
+menus:
+  main:
+    - identifier: home
+      name: Home
+      pageRef: /
+      weight: 10
+      params:
+        icon: home
+    - identifier: docs
+      name: Documentation
+      pageRef: /docs
+      weight: 20
+      params:
+        icon: menu_book
