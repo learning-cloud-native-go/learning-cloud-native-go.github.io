@@ -1,0 +1,20 @@
+User-agent: Googlebot
+User-agent: YandexBot
+User-agent: baiduspider
+User-agent: Applebot
+Allow: /
+
+User-agent: *
+Disallow: /docs/building-a-containerized-restful-api/
+Disallow: /docs/configuration/
+Disallow: /docs/database-and-db-migrations/
+Disallow: /docs/
+Disallow: /docs/form-validation/
+Disallow: /docs/initialize-the-server/
+Disallow: /
+Disallow: /journal/
+Disallow: /docs/openapi-specification/
+Disallow: /docs/overview/
+Disallow: /page/
+Disallow: /docs/repository-generation/
+Disallow: /docs/routes-and-error-responses/

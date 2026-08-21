@@ -1,7 +1,7 @@
+target/
+.DS_Store
 .idea
 .zed
 .vscode
-.DS_Store
 .hugo_build.lock
-
-/docs
+resources

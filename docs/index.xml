@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Learning Cloud Native Go</title><link>https://learning-cloud-native-go.github.io/</link><description>Recent content on Learning Cloud Native Go</description><generator>Hugo</generator><language>en-US</language><atom:link href="https://learning-cloud-native-go.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Building a Containerized RESTful API</title><link>https://learning-cloud-native-go.github.io/docs/building-a-containerized-restful-api/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/building-a-containerized-restful-api/</guid><description>&lt;div class="alert alert-assignment"&gt;
+	&lt;div class="alert-header"&gt;
+		
+		
+
+	&lt;svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"&gt;&lt;path d="M216-144q-29.7 0-50.85-21.15Q144-186.3 144-216v-528q0-29.7 21.15-50.85Q186.3-816 216-816h171q8-31 33.5-51.5T480-888q34 0 59.5 20.5T573-816h171q29.7 0 50.85 21.15Q816-773.7 816-744v528q0 29.7-21.15 50.85Q773.7-144 744-144H216Zm0-72h528v-528H216v528Zm108-72h216q15.3 0 25.65-10.29Q576-308.58 576-323.79t-10.35-25.71Q555.3-360 540-360H324q-15.3 0-25.65 10.29Q288-339.42 288-324.21t10.35 25.71Q308.7-288 324-288Zm0-156h312q15.3 0 25.65-10.29Q672-464.58 672-479.79t-10.35-25.71Q651.3-516 636-516H324q-15.3 0-25.65 10.29Q288-495.42 288-480.21t10.35 25.71Q308.7-444 324-444Zm0-156h312q15.3 0 25.65-10.29Q672-620.58 672-635.79t-10.35-25.71Q651.3-672 636-672H324q-15.3 0-25.65 10.29Q288-651.42 288-636.21t10.35 25.71Q308.7-600 324-600Zm173-175q7-7 7-17t-7-17q-7-7-17-7t-17 7q-7 7-7 17t7 17q7 7 17 7t17-7ZM216-216v-528 528Z"/&gt;&lt;/svg&gt;
+
+
+		&lt;span&gt;
+		
+			In this series,
+		
+		&lt;/span&gt;
+	&lt;/div&gt;
+	&lt;div class="alert-body"&gt;
+		&lt;p&gt;We build a production-ready containerized RESTful API server application using following packages and tools.&lt;/p&gt;</description></item><item><title>Configuration</title><link>https://learning-cloud-native-go.github.io/docs/configuration/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/configuration/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;👨‍🏫 Before we start&amp;hellip;&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Configurations can be stored in a variety of formats, such as &lt;code&gt;.xml&lt;/code&gt;, &lt;code&gt;.json&lt;/code&gt;, &lt;code&gt;.env&lt;/code&gt;, &lt;code&gt;.yaml&lt;/code&gt;, and &lt;code&gt;.toml&lt;/code&gt; files, as well as systems like &lt;a href="https://etcd.io/" target="_blank" &gt;&lt;code&gt;etcd&lt;/code&gt;&lt;/a&gt;, &lt;a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html" target="_blank" &gt;AWS Parameter Store&lt;/a&gt;, and &lt;a href="https://cloud.google.com/deployment-manager/runtime-configurator/" target="_blank" &gt;GCP Runtime Configurator&lt;/a&gt;. In this project, we will save the configurations in an &lt;code&gt;.env&lt;/code&gt; file and use &lt;code&gt;docker compose&lt;/code&gt; to load them into the development environment.&lt;/li&gt;
+&lt;li&gt;Go standard library provides the &lt;a href="https://golang.org/pkg/os/#Getenv" target="_blank" &gt;&lt;code&gt;os.Getenv()&lt;/code&gt;&lt;/a&gt; function to read each environment variable separately. But there are Go libraries such as &lt;a href="https://github.com/spf13/viper" target="_blank" &gt;&lt;code&gt;spf13/viper&lt;/code&gt;&lt;/a&gt;, &lt;a href="https://github.com/kelseyhightower/envconfig" target="_blank" &gt;&lt;code&gt;kelseyhightower/envconfig&lt;/code&gt;&lt;/a&gt;, &lt;a href="https://github.com/caarlos0/env" target="_blank" &gt;&lt;code&gt;caarlos0/env&lt;/code&gt;&lt;/a&gt;, and &lt;a href="https://github.com/joeshaw/envdecode" target="_blank" &gt;&lt;code&gt;joeshaw/envdecode&lt;/code&gt;&lt;/a&gt; to read environment variables in bulk and populate them as a struct. We choose &lt;a href="https://github.com/joeshaw/envdecode" target="_blank" &gt;&lt;code&gt;joeshaw/envdecode&lt;/code&gt;&lt;/a&gt; for this project because it includes validations, zero-dependency, and ease of use.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="populate-environment-variables-with-docker"&gt;Populate environment variables with Docker&lt;/h2&gt;
+&lt;p&gt;💡 We use &lt;code&gt;docker compose&lt;/code&gt; with the &lt;a href="https://docs.docker.com/compose/compose-file/compose-file-v3/#env_file" target="_blank" &gt;&lt;code&gt;env_file&lt;/code&gt;&lt;/a&gt; option to load the environment variables into the development environment. If you are using &lt;code&gt;docker run&lt;/code&gt;, you can use the &lt;a href="https://docs.docker.com/engine/reference/commandline/run/#options" target="_blank" &gt;&lt;code&gt;--env-file&lt;/code&gt; option&lt;/a&gt; with it.&lt;/p&gt;</description></item><item><title>Database and DB Migrations</title><link>https://learning-cloud-native-go.github.io/docs/database-and-db-migrations/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/database-and-db-migrations/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;👨‍🏫 Before we start&amp;hellip;&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;We&amp;rsquo;ll run a Postgres database via &lt;code&gt;docker compose&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;There are a few popular database migration tools in the Go ecosystem, like &lt;a href="https://github.com/golang-migrate/migrate" target="_blank" &gt;&lt;code&gt;golang-migrate/migrate&lt;/code&gt;&lt;/a&gt;, &lt;a href="https://github.com/pressly/goose" target="_blank" &gt;&lt;code&gt;pressly/goose&lt;/code&gt;&lt;/a&gt;, &lt;a href="http://gorm.io/docs/migration.html" target="_blank" &gt;GORM migrations&lt;/a&gt;, etc. We selected &lt;a href="https://github.com/pressly/goose" target="_blank" &gt;&lt;code&gt;pressly/goose&lt;/code&gt;&lt;/a&gt; due to its simplicity, lesser resource usage, and customizability. But, instead of using its prebuilt binaries, we&amp;rsquo;ll build a custom binary with static drivers, settings, and more simplified commands.&lt;/li&gt;
+&lt;li&gt;⭐ We&amp;rsquo;ll store all &lt;code&gt;SQL&lt;/code&gt; database migration files in the &lt;code&gt;migrations&lt;/code&gt; folder in the project root.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="database-design"&gt;Database Design&lt;/h2&gt;
+&lt;p&gt;In this article series, we are building a RESTful CRUD API for a simple bookshelf. We&amp;rsquo;ll use the &lt;a href="https://en.wikipedia.org/wiki/PostgreSQL" target="_blank" &gt;Postgres&lt;/a&gt; database and a table called &amp;ldquo;books&amp;rdquo; to store the data, which has the following columns.&lt;/p&gt;</description></item><item><title>Form Validation</title><link>https://learning-cloud-native-go.github.io/docs/form-validation/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/form-validation/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;👨‍🏫 Before we start&amp;hellip;&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Go &lt;code&gt;error&lt;/code&gt; values usually provide a more detailed context about what actually went wrong. However, returning the actual error messages to end user mostly cause confusion and make the system vulnerable to security threats. So, when an error occurs, we will send a custom but meaningful error message to the end-user.&lt;/li&gt;
+&lt;li&gt;We choose the &lt;a href="https://github.com/go-playground/validator/" target="_blank" &gt;&lt;code&gt;go-playground/validator&lt;/code&gt;&lt;/a&gt; for form validations, as it supports struct level validations, extensive validation rules, customizable error handling, etc.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="adding-error-messages-to-the-api"&gt;Adding error messages to the API&lt;/h2&gt;
+&lt;h3 id="1-identify-and-standardize-errors"&gt;1. Identify and standardize errors&lt;/h3&gt;
+&lt;p&gt;While an error occurs, returning the actual error details to the end-user could result in a poor user/ developer experience and could potentially expose sensitive information and posing a security risk. Let&amp;rsquo;s identify the error cases and standardize our error messages.&lt;/p&gt;</description></item><item><title>Initialize the Server</title><link>https://learning-cloud-native-go.github.io/docs/initialize-the-server/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/initialize-the-server/</guid><description>&lt;h2 id="listenandserve"&gt;&lt;code&gt;ListenAndServe&lt;/code&gt;&lt;/h2&gt;
+
+
+&lt;div class="alert alert-tip"&gt;
+	&lt;div class="alert-header"&gt;
+		
+		
+
+	&lt;svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"&gt;&lt;path d="M407.74-240Q378-240 357-261.15 336-282.3 336-312v-67q-57-37.3-88.5-95.65Q216-533 216-600q0-110.31 76.78-187.16 76.78-76.84 187-76.84T667-787.16q77 76.85 77 187.16 0 66.82-31.5 125.41T624-379v67q0 29.7-21.18 50.85Q581.65-240 551.91-240H407.74Zm.26-72h144v-86q0-9.29 4-17.64 4-8.36 12-12.92l17-10.93q41-25.51 64-68.69 23-43.18 23-91.82 0-79.68-56.23-135.84-56.22-56.16-136-56.16Q400-792 344-735.84 288-679.68 288-600q0 48.64 23 91.82 23 43.18 64 68.69l17 10.93q8 4.56 12 12.92 4 8.35 4 17.64v86ZM396-96q-15.3 0-25.65-10.29Q360-116.58 360-131.79t10.35-25.71Q380.7-168 396-168h168q15.3 0 25.65 10.29Q600-147.42 600-132.21t-10.35 25.71Q579.3-96 564-96H396Zm84-504Z"/&gt;&lt;/svg&gt;
+
+
+		&lt;span&gt;
+		
+			Tip
+		
+		&lt;/span&gt;
+	&lt;/div&gt;
+	&lt;div class="alert-body"&gt;
+		&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://pkg.go.dev/net/http#ListenAndServe" target="_blank" &gt;&lt;code&gt;ListenAndServe&lt;/code&gt;&lt;/a&gt; listens on the TCP network address addr and then calls Serve with handler to handle requests on incoming connections.&lt;/li&gt;
+&lt;li&gt;Accepted connections are configured to enable TCP keep-alives.&lt;/li&gt;
+&lt;/ul&gt;
+	&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;Let’s save this code under &lt;code&gt;main.go&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>Learning Cloud Native Go</title><link>https://learning-cloud-native-go.github.io/journal/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/journal/</guid><description>&lt;h2 id="2026-january-19"&gt;2026: January 19&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;img src="https://learning-cloud-native-go.github.io/journal/1000GitHubStarsCodebase.jpg" alt="1000 Stars for Codebase - Monday, January 19, 2026 at 5:59:28 PM GMT&amp;#43;8"&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://www.reddit.com/r/golang/comments/1qh06ok/i_recently_hit_1000_github_stars_on/" target="_blank" &gt;Reddit: r/golang&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="2019-october-07"&gt;2019: October 07&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;img src="https://learning-cloud-native-go.github.io/journal/LetsGetItStarted.jpg" alt="Let’s Get It Started! - Monday, October 7, 2019 at 6:37:13 AM GMT&amp;#43;8"&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://medium.com/learning-cloud-native-go/lets-get-it-started-dc4634ef03b" target="_blank" &gt;Medium&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://www.reddit.com/r/golang/comments/deam7y/building_a_dockerized_restful_api_application/" target="_blank" &gt;Reddit: r/golang&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;</description></item><item><title>OpenAPI Specification</title><link>https://learning-cloud-native-go.github.io/docs/openapi-specification/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/openapi-specification/</guid><description>&lt;h2 id="generating-openapi-specification"&gt;Generating OpenAPI specification&lt;/h2&gt;
+&lt;p&gt;The OpenAPI specification is an API description format for REST APIs. It&amp;rsquo;s a document that shows all API endpoints with their input/ output parameters, authentication methods, etc. So, we need to finalize which information we gather while creating a &lt;code&gt;book&lt;/code&gt; or editing it, the format we use to present the &lt;code&gt;book&lt;/code&gt; in &lt;code&gt;Read&lt;/code&gt; and &lt;code&gt;List&lt;/code&gt; APIs, and the format of error cases, like server errors and validation errors.&lt;/p&gt;</description></item><item><title>Overview</title><link>https://learning-cloud-native-go.github.io/docs/overview/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/overview/</guid><description>&lt;h2 id="about-me"&gt;About me&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;🧑‍💻 I am an expat working in Singapore as a Go Backend and DevOps Engineer. Feel free to reach out if you find any mistakes or anything that needs to be changed, including spelling or grammar errors. Alternatively, you can create a pull request, open an issue, or &lt;a href="https://gist.github.com/dumindu/153b6cf8a346d3a1aad51e17291d4dda" target="_blank" &gt;share your awesome ideas in this gist&lt;/a&gt;. Good luck with learning cloud native Go!&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;a href="https://github.com/learning-cloud-native-go/myapp" target="_blank" &gt;&lt;img src="https://img.shields.io/github/stars/learning-cloud-native-go/myapp?style=for-the-badge&amp;amp;logo=go&amp;amp;logoColor=333333&amp;amp;label=learning-cloud-native-go/myapp&amp;amp;labelColor=f9f9f9&amp;amp;color=00ADD8" alt="learning-cloud-native-go/myapp"&gt;&lt;/a&gt;
+&lt;a href="https://github.com/learning-cloud-native-go/learning-cloud-native-go.github.io" target="_blank" &gt;&lt;img src="https://img.shields.io/github/stars/learning-cloud-native-go/learning-cloud-native-go.github.io?style=for-the-badge&amp;amp;logo=go&amp;amp;logoColor=333333&amp;amp;label=learning-cloud-native-go.github.io&amp;amp;labelColor=f9f9f9&amp;amp;color=00ADD8" alt="learning-cloud-native-go.github.io"&gt;&lt;/a&gt;
+&lt;a href="https://learning-rust.github.io" target="_blank" &gt;&lt;img src="https://img.shields.io/github/stars/learning-rust/learning-rust.github.io?style=for-the-badge&amp;amp;logo=rust&amp;amp;label=learning-rust.github.io&amp;amp;logoColor=333333&amp;amp;labelColor=f9f9f9&amp;amp;color=F46623" alt="learning-rust.github.io"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://github.com/dumindu" target="_blank" &gt;&lt;img src="https://img.shields.io/badge/dumindu-866ee7?style=for-the-badge&amp;amp;logo=GitHub&amp;amp;logoColor=333333&amp;amp;labelColor=f9f9f9" alt="github.com"&gt;&lt;/a&gt;
+&lt;a href="https://www.buymeacoffee.com/dumindu" target="_blank" &gt;&lt;img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-dumindu-FFDD00?style=for-the-badge&amp;amp;logo=buymeacoffee&amp;amp;logoColor=333333&amp;amp;labelColor=f9f9f9" alt="buymeacoffee"&gt;&lt;/a&gt;&lt;/p&gt;</description></item><item><title>Repository Generation</title><link>https://learning-cloud-native-go.github.io/docs/repository-generation/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/repository-generation/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;👨‍🏫 Before we start&amp;hellip;&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The repository pattern is a design pattern in software development used to isolate/ abstract the data layer.&lt;/li&gt;
+&lt;li&gt;Go standard library provides the &lt;a href="https://pkg.go.dev/database/sql" target="_blank" &gt;&lt;code&gt;database/sql&lt;/code&gt;&lt;/a&gt; package to interaction with SQL databases. But there are Go libraries such as &lt;a href="https://github.com/jmoiron/sqlx" target="_blank" &gt;&lt;code&gt;sqlx&lt;/code&gt;&lt;/a&gt;, &lt;a href="https://github.com/sqlc-dev/sqlc" target="_blank" &gt;&lt;code&gt;sqlc&lt;/code&gt;&lt;/a&gt;, &lt;a href="https://gorm.io/" target="_blank" &gt;GORM&lt;/a&gt;, &lt;a href="https://entgo.io" target="_blank" &gt;Ent&lt;/a&gt; which can be a good fit for your requirements. We choose GORM because it&amp;rsquo;s good for rapid development and to handle complex database transactions comfortably.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="adding-repository"&gt;Adding repository&lt;/h2&gt;
+&lt;h3 id="1-add-gorm"&gt;1. Add GORM&lt;/h3&gt;
+&lt;p&gt;GORM is a comprehensive &lt;a href="https://en.wikipedia.org/wiki/Object%e2%80%93relational_mapping" target="_blank" &gt;ORM&lt;/a&gt; for Go. Its features include CRUD operations, querying, association handling, auto migrations, preloading, hooks, and much more. It is also compatible with various SQL databases including MySQL, PostgreSQL, SQLite, and SQL Server. Please refer to the &lt;a href="https://gorm.io/docs/" target="_blank" &gt;GORM documentation&lt;/a&gt; for more information.&lt;/p&gt;</description></item><item><title>Routes and Error Responses</title><link>https://learning-cloud-native-go.github.io/docs/routes-and-error-responses/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/docs/routes-and-error-responses/</guid><description>&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;👨‍🏫 Before we start&amp;hellip;&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Resource-oriented design helps to create a predictable, uniform interface for designing and developing APIs. We&amp;rsquo;ll start by implementing a common interface and designing our APIs based on it.&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://github.com/gorilla/mux" target="_blank" &gt;&lt;code&gt;gorilla/mux&lt;/code&gt;&lt;/a&gt; and &lt;a href="https://github.com/go-chi/chi" target="_blank" &gt;&lt;code&gt;go-chi/chi&lt;/code&gt;&lt;/a&gt; are the popular router packages in the Go ecosystem. We&amp;rsquo;ll go with &lt;a href="https://github.com/go-chi/chi" target="_blank" &gt;&lt;code&gt;go-chi/chi&lt;/code&gt;&lt;/a&gt; because of its lightweightness and 100% compatibility with &lt;code&gt;net/http&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;We&amp;rsquo;ll use &lt;a href="https://github.com/swaggo/swag" target="_blank" &gt;swaggo/swag&lt;/a&gt; to generate the OpenAPI specification from the annotations in each handler, even though it still supports only OpenAPI 2/ Swagger 2.0 specifications. Packages such as &lt;a href="https://github.com/swaggest/rest" target="_blank" &gt;swaggest/rest&lt;/a&gt;, &lt;a href="https://github.com/deepmap/oapi-codegen" target="_blank" &gt;deepmap/oapi-codegen&lt;/a&gt; support OpenAPI 3, but these are custom boilerplate generators with/ from OpenAPI 3 specifications.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="resource-oriented-design"&gt;Resource oriented design&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href="https://en.wikipedia.org/wiki/Resource-oriented_architecture" target="_blank" &gt;🔍&lt;/a&gt; Resource oriented architecture is a style of software architecture and programming paradigm for supportively designing and developing software in the form of inter-networking of resources with &amp;ldquo;RESTful&amp;rdquo; interfaces, first described by Leonard Richardson and Sam Ruby in their book &amp;ldquo;RESTful Web Services&amp;rdquo; in 2007.&lt;/p&gt;</description></item></channel></rss>
