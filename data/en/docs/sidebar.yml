@@ -2,7 +2,7 @@
   pages:
     - title: Overview
 
-- title: Building The RESTful API
+- title: RESTful API
   pages:
     - title: Building a Containerized RESTful API
     - title: Initialize the Server
