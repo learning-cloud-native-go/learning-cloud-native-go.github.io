@@ -13,15 +13,14 @@ User-agent: CCBot
 User-agent: Bytespider
 User-agent: *
 Disallow: /docs/building-a-containerized-restful-api/
+Disallow: /docs/completing-handlers/
 Disallow: /docs/configuration/
 Disallow: /docs/database-and-db-migrations/
 Disallow: /docs/
-Disallow: /docs/form-validation/
 Disallow: /docs/initialize-the-server/
 Disallow: /
 Disallow: /journal/
+Disallow: /docs/model-repository-gorm-cli/
 Disallow: /docs/openapi-specification/
 Disallow: /docs/overview/
 Disallow: /page/
-Disallow: /docs/repository-generation/
-Disallow: /docs/routes-and-error-responses/

@@ -8,7 +8,6 @@
     - title: Initialize the Server
     - title: Configuration
     - title: Database and DB Migrations
-    - title: Repository Generation
-    - title: Routes and Error Responses
-    - title: Form Validation
+    - title: Model, Repository & GORM CLI
+    - title: Completing Handlers
     - title: OpenAPI Specification
