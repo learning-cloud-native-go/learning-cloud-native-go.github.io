@@ -17,6 +17,7 @@ Disallow: /docs/completing-handlers/
 Disallow: /docs/configuration/
 Disallow: /docs/database-and-db-migrations/
 Disallow: /docs/
+Disallow: /docs/form-validation-error-responses/
 Disallow: /docs/initialize-the-server/
 Disallow: /
 Disallow: /journal/
