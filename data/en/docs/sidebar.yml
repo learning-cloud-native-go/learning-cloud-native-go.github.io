@@ -9,5 +9,6 @@
     - title: Configuration
     - title: Database and DB Migrations
     - title: Model, Repository & GORM CLI
+    - title: Form Validation & Error Responses
     - title: Completing Handlers
     - title: OpenAPI Specification
