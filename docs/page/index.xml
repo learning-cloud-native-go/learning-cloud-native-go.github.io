@@ -1,15 +1,22 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Pages on Learning Cloud Native Go</title><link>https://learning-cloud-native-go.github.io/page/</link><description>Recent content in Pages on Learning Cloud Native Go</description><generator>Hugo</generator><language>en-US</language><atom:link href="https://learning-cloud-native-go.github.io/page/index.xml" rel="self" type="application/rss+xml"/><item><title>Learning Cloud Native Go</title><link>https://learning-cloud-native-go.github.io/journal/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/journal/</guid><description>&lt;h2 id="2026-january-19"&gt;2026: January 19&lt;/h2&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Pages on Learning Cloud Native Go</title><link>https://learning-cloud-native-go.github.io/page/</link><description>Recent content in Pages on Learning Cloud Native Go</description><generator>Hugo</generator><language>en-US</language><atom:link href="https://learning-cloud-native-go.github.io/page/index.xml" rel="self" type="application/rss+xml"/><item><title>Learning Cloud Native Go</title><link>https://learning-cloud-native-go.github.io/journal/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://learning-cloud-native-go.github.io/journal/</guid><description>&lt;h2 id="2026-september-02"&gt;2026: September 02&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;img src="https://learning-cloud-native-go.github.io/journal/BuildingaContainerizedRESTfulAPI.jpg" alt="Building a Containerized RESTful API- Wednesday, September 2, 2026 at 1:19:30 PM GMT&amp;#43;8"&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Added long-awaited Kubernetes, ArgoCD deployment setup to the Codebase.&lt;/li&gt;
+&lt;li&gt;Updated whole section of RESTful API in the documentation, to sync with latest Go code.&lt;/li&gt;
+&lt;li&gt;Based on my own &lt;a href="https://dumindu.github.io/E25DX/" target="_blank" &gt;e25DX&lt;/a&gt; theme, since 2024.&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://www.reddit.com/r/golang/comments/1w511ho/building_a_containerized_restful_api_updated_2026/" target="_blank" &gt;Reddit: r/golang&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;hr&gt;
+&lt;h2 id="2026-january-19"&gt;2026: January 19&lt;/h2&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;img src="https://learning-cloud-native-go.github.io/journal/1000GitHubStarsCodebase.jpg" alt="1000 Stars for Codebase - Monday, January 19, 2026 at 5:59:28 PM GMT&amp;#43;8"&gt;&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;a href="https://www.reddit.com/r/golang/comments/1qh06ok/i_recently_hit_1000_github_stars_on/" target="_blank" &gt;Reddit: r/golang&lt;/a&gt;.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/blockquote&gt;
+&lt;hr&gt;
 &lt;h2 id="2019-october-07"&gt;2019: October 07&lt;/h2&gt;
 &lt;blockquote&gt;
-&lt;p&gt;&lt;img src="https://learning-cloud-native-go.github.io/journal/LetsGetItStarted.jpg" alt="Let’s Get It Started! - Monday, October 7, 2019 at 6:37:13 AM GMT&amp;#43;8"&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="https://medium.com/learning-cloud-native-go/lets-get-it-started-dc4634ef03b" target="_blank" &gt;Medium&lt;/a&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;a href="https://www.reddit.com/r/golang/comments/deam7y/building_a_dockerized_restful_api_application/" target="_blank" &gt;Reddit: r/golang&lt;/a&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/blockquote&gt;</description></item></channel></rss>
+&lt;p&gt;&lt;img src="https://learning-cloud-native-go.github.io/journal/LetsGetItStarted.jpg" alt="Let’s Get It Started! - Monday, October 7, 2019 at 6:37:13 AM GMT&amp;#43;8"&gt;&lt;/p&gt;</description></item></channel></rss>
