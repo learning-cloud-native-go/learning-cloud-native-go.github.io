@@ -25,3 +25,4 @@ Disallow: /docs/model-repository-gorm-cli/
 Disallow: /docs/openapi-specification/
 Disallow: /docs/overview/
 Disallow: /page/
+Disallow: /docs/whats-next/
